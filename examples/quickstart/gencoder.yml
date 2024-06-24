@@ -1,0 +1,18 @@
+gencoder:
+  template-dir: templates
+  block-marker:
+    start: 'gencoder block start:'
+    end: 'gencoder block end:'
+  databases:
+    - name: mysql
+      connection: mysql://root:password@localhost:3306/test
+      tables:
+        - name: '.*'
+#          generate-location: generated/mysql
+          extra-properties:
+            package: com.example
+    - name: postgres
+      connection: postgres://root:password@localhost:5432/test
+      tables:
+        - name: '.*'
+#          generate-location: generated/postgres

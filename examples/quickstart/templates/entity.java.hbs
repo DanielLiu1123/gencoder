@@ -1,0 +1,19 @@
+
+/**
+ * gencoder file name: src/main/{{package}}/{{name}}.java
+ */
+
+package {{package}};
+
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class {{name}} {
+    // gencoder block start: columns
+    {{#each fields}}
+    private {{type}} {{name}};
+    {{/each}}
+    // gencoder block end: columns
+}

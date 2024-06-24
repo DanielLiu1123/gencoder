@@ -39,5 +39,5 @@ func init() {
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.Flags().StringP("config", "c", "generator.yaml", "config file, default is gencoder.[yml|yaml]")
 }
