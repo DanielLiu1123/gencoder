@@ -1,0 +1,13 @@
+mappings:
+  - db: 'varchar.*'
+    nullable-target: 'String'
+    nonnull-target: 'String'
+  - db: '.*int.*'
+    nullable-target: 'Integer'
+    nonnull-target: 'Integer'
+  - db: 'datetime'
+    nullable-target: 'java.util.Date'
+    nonnull-target: 'java.util.Date'
+  - db: 'timestamp'
+    lang: 'java.sql.Timestamp'
+

@@ -1,19 +1,16 @@
-
 /**
  * gencoder file name: src/main/{{package}}/{{name}}.java
  */
 
 package {{package}};
 
-import lombok.Getter;
-import lombok.Setter;
-
-@Getter
-@Setter
-public class {{name}} {
+/**
+ * {{name}} is a public record that represents a {{name}} entity.
+ */
+public record {{name}} (
     // gencoder block start: columns
     {{#each fields}}
-    private {{type}} {{name}};
+        {{type}} {{name}},
     {{/each}}
     // gencoder block end: columns
-}
+) {}

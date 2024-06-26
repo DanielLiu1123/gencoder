@@ -6,11 +6,19 @@ gencoder:
   databases:
     - name: mysql
       connection: mysql://root:password@localhost:3306/test
+      extra-properties:
+        - name: package
+          value: example
       tables:
-        - name: '.*'
+        - name: 'order_.*'
 #          generate-location: generated/mysql
           extra-properties:
-            package: com.example
+            - name: package
+              value: example.order
+        - name: 'user_.*'
+          extra-properties:
+            - name: package
+              value: example.user
     - name: postgres
       connection: postgres://root:password@localhost:5432/test
       tables:
