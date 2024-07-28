@@ -1,0 +1,16 @@
+/**
+ * gencoder file name: src/main/{{package}}/{{PascalCase name}}.java
+ */
+
+package {{package}};
+
+/**
+ * {{PascalCase name}} is a public record that represents a {{PascalCase name}} entity.
+ */
+public record {{PascalCase name}} (
+    // gencoder block start: columns
+    {{#each columns}}
+        {{type}} {{CamelCase name}},
+    {{/each}}
+    // gencoder block end: columns
+) {}
