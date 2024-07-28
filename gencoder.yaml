@@ -16,7 +16,3 @@ databases:
             value: example.order
         ignore-columns:
           - deleted_at
-  - name: postgres
-    dsn: 'postgres://root:password@localhost:5432/test'
-    tables:
-      - name: '.*'
