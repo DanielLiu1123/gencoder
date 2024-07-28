@@ -1,0 +1,22 @@
+# TODO(Freeman): Delete it!
+templates-dir: templates
+block-marker:
+  start: 'gencoder block start:'
+  end: 'gencoder block end:'
+databases:
+  - name: mysql
+    dsn: 'mysql://root:123456@localhost:3306/testdb'
+    extra-properties:
+      - name: package
+        value: example
+    tables:
+      - name: 'user'
+        extra-properties:
+          - name: package
+            value: example.order
+        ignore-columns:
+          - deleted_at
+  - name: postgres
+    dsn: 'postgres://root:password@localhost:5432/test'
+    tables:
+      - name: '.*'
