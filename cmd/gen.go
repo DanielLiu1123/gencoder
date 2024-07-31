@@ -34,27 +34,32 @@ var genCmd = &cobra.Command{
 		}
 
 		templates, err := loadTemplates(cfg.TemplatesDir)
+		if err != nil {
+			panic(err)
+		}
 
-		for i, database := range cfg.Databases {
-			db, err := dburl.Open(database.Dsn)
+		for _, dbCfg := range cfg.Databases {
+			db, err := dburl.Open(dbCfg.Dsn)
 			if err != nil {
 				panic(err)
 			}
 
-			for _, table := range database.Tables {
+			for _, table := range dbCfg.Tables {
 				table, err := info.GenMySQLTable(context.Background(), db, "testdb", table.Name)
 				if err != nil {
 					panic(err)
 				}
 
 				for _, tpl := range templates {
-					result, err := tpl.Exec(table)
+					content, err := tpl.Template.Exec(table)
 					if err != nil {
 						panic(err)
 					}
 
-					filename := table.Name + ".go"
-					err = os
+					err = os.WriteFile(tpl.Name, []byte(content), 0644)
+					if err != nil {
+						panic(err)
+					}
 				}
 
 			}
@@ -89,7 +94,7 @@ func loadTemplates(dir string) ([]*tpl, error) {
 		if entry.IsDir() {
 			continue
 		}
-		if !strings.HasPrefix(entry.Name(), ".hbs") {
+		if !strings.HasSuffix(entry.Name(), ".hbs") {
 			continue
 		}
 
@@ -126,7 +131,7 @@ func getGeneratedFileName(content *string) string {
 		}
 	}
 
-	return ""
+	panic(fileNamePrefix + " not found")
 }
 
 type tpl struct {
