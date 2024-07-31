@@ -8,7 +8,9 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/xo/dburl"
 	"gopkg.in/yaml.v3"
+	"io/fs"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -83,31 +85,31 @@ func readConfig() (*info.Config, error) {
 }
 
 func loadTemplates(dir string) ([]*tpl, error) {
-	entries, err := os.ReadDir(dir)
-	if err != nil {
-		return nil, err
-	}
+	var templates []*tpl
 
-	var templates = make([]*tpl, 0, len(entries))
-
-	for _, entry := range entries {
-		if entry.IsDir() {
-			continue
-		}
-		if !strings.HasSuffix(entry.Name(), ".hbs") {
-			continue
-		}
-
-		b, err := os.ReadFile(entry.Name())
+	err := filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
-			return nil, err
+			return err
+		}
+
+		if d.IsDir() {
+			return nil
+		}
+
+		if !strings.HasSuffix(d.Name(), ".hbs") {
+			return nil
+		}
+
+		b, err := os.ReadFile(path)
+		if err != nil {
+			return err
 		}
 
 		content := string(b)
 
 		template, err := raymond.Parse(content)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		t := &tpl{
@@ -116,6 +118,11 @@ func loadTemplates(dir string) ([]*tpl, error) {
 		}
 
 		templates = append(templates, t)
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
 	}
 
 	return templates, nil
