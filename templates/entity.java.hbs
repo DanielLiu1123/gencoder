@@ -1,16 +1,16 @@
 /**
- * gencoder generated file: src/main/{{package}}/{{PascalCase name}}.java
+ * gencoder generated file: src/main/{{package}}/{{name}}.java
  */
 
 package {{package}};
 
 /**
- * {{PascalCase name}} is a public record that represents a {{PascalCase name}} entity.
+ * {{name}} is a public record that represents a {{name}} entity.
  */
-public record {{PascalCase name}} (
+public record {{name}} (
     // gencoder block start: columns
     {{#each columns}}
-        {{type}} {{CamelCase name}},
+        {{type}} {{name}},
     {{/each}}
     // gencoder block end: columns
 ) {}

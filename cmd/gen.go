@@ -58,7 +58,7 @@ var genCmd = &cobra.Command{
 						panic(err)
 					}
 
-					err = os.WriteFile(tpl.Name, []byte(content), 0644)
+					err = os.WriteFile(getFileName(tpl.Name, table), []byte(content), 0644)
 					if err != nil {
 						panic(err)
 					}
@@ -67,6 +67,20 @@ var genCmd = &cobra.Command{
 			}
 		}
 	},
+}
+
+func getFileName(filenameTpl string, table *info.Table) string {
+	n, err := raymond.Parse(filenameTpl)
+	if err != nil {
+		panic(err)
+	}
+
+	fileName, err := n.Exec(table)
+	if err != nil {
+		panic(err)
+	}
+
+	return fileName
 }
 
 func readConfig() (*info.Config, error) {
@@ -113,7 +127,7 @@ func loadTemplates(dir string) ([]*tpl, error) {
 		}
 
 		t := &tpl{
-			Name:     getGeneratedFileName(&content),
+			Name:     getFileNameTemplate(&content),
 			Template: template,
 		}
 
@@ -128,7 +142,7 @@ func loadTemplates(dir string) ([]*tpl, error) {
 	return templates, nil
 }
 
-func getGeneratedFileName(content *string) string {
+func getFileNameTemplate(content *string) string {
 	scanner := bufio.NewScanner(strings.NewReader(*content))
 
 	for scanner.Scan() {
