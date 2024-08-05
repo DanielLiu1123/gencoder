@@ -9,8 +9,10 @@ type Config struct {
 	Databases []*struct {
 		Name            string             `yaml:"name"`
 		Dsn             string             `yaml:"dsn"`
+		Schema          string             `yaml:"schema"`
 		ExtraProperties []*ExtraProperties `yaml:"extra-properties"`
 		Tables          []*struct {
+			Schema          string             `yaml:"schema"`
 			Name            string             `yaml:"name"`
 			ExtraProperties []*ExtraProperties `yaml:"extra-properties"`
 			IgnoreColumns   []string           `yaml:"ignore-columns"`

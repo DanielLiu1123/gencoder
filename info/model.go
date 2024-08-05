@@ -3,17 +3,19 @@ package info
 import "database/sql"
 
 type Table struct {
-	Schema  string    `json:"schema"`
-	Name    string    `json:"name"`
-	Comment string    `json:"comment"`
-	Columns []*Column `json:"columns"`
-	Indexes []*Index  `json:"indexes"`
+	Schema    string    `json:"schema"`
+	TableName string    `json:"table_name"`
+	Comment   string    `json:"comment"`
+	Columns   []*Column `json:"columns"`
+	Indexes   []*Index  `json:"indexes"`
 }
 
 type Column struct {
+	Schema       string         `json:"schema"`
+	TableName    string         `json:"table_name"`
 	Ordinal      int            `json:"ordinal"`
-	Name         string         `json:"name"`
-	Type         string         `json:"type"`
+	ColumnName   string         `json:"column_name"`
+	ColumnType   string         `json:"column_type"`
 	IsNullable   bool           `json:"is_nullable"`
 	DefaultValue sql.NullString `json:"default_value"`
 	IsPrimaryKey bool           `json:"is_primary_key"`
@@ -21,9 +23,17 @@ type Column struct {
 }
 
 type Index struct {
-	Schema   string   `json:"schema"`
-	Table    string   `json:"table"`
-	Name     string   `json:"name"`
-	IsUnique bool     `json:"is_unique"`
-	Columns  []string `json:"columns"`
+	Schema    string `json:"schema"`
+	TableName string `json:"table_name"`
+	IndexName string `json:"index_name"`
+	IsUnique  bool   `json:"is_unique"`
+	IsPrimary bool   `json:"is_primary"`
+}
+
+type IndexColumn struct {
+	Schema     string `json:"schema"`
+	TableName  string `json:"table_name"`
+	Ordinal    int    `json:"ordinal"`
+	IndexName  string `json:"index_name"`
+	ColumnName string `json:"column_name"`
 }

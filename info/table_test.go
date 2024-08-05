@@ -90,7 +90,7 @@ func TestGenMySQLTable(t *testing.T) {
 
 	assert.NotNil(t, tb)
 	assert.Equal(t, "testdb", tb.Schema)
-	assert.Equal(t, "user", tb.Name)
+	assert.Equal(t, "user", tb.TableName)
 	assert.Equal(t, "", tb.Comment)
 
 	assert.Equal(t, 4, len(tb.Columns))
@@ -99,12 +99,12 @@ func TestGenMySQLTable(t *testing.T) {
 
 	assert.Equal(t, 3, len(tb.Indexes))
 	assert.Contains(t, tb.Indexes, &Index{Schema: schema,
-		Table: table, Name: "PRIMARY", IsUnique: true,
+		TableName: table, IndexName: "PRIMARY", IsUnique: true,
 		Columns: []string{"id"}})
 	assert.Contains(t, tb.Indexes, &Index{Schema: schema,
-		Table: table, Name: "idx_name", IsUnique: false,
+		TableName: table, IndexName: "idx_name", IsUnique: false,
 		Columns: []string{"name"}})
 	assert.Contains(t, tb.Indexes, &Index{Schema: schema,
-		Table: table, Name: "idx_email", IsUnique: true,
+		TableName: table, IndexName: "idx_email", IsUnique: true,
 		Columns: []string{"email"}})
 }

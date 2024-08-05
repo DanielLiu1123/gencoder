@@ -20,7 +20,7 @@ where table_schema = ?
 `
 	tableRow := db.QueryRowContext(ctx, tableSql, schema, table)
 	var t Table
-	if err := tableRow.Scan(&t.Schema, &t.Name, &t.Comment); err != nil {
+	if err := tableRow.Scan(&t.Schema, &t.TableName, &t.Comment); err != nil {
 		return nil, err
 	}
 
@@ -45,7 +45,7 @@ order by ordinal;
 	var columns []*Column
 	for columnRow.Next() {
 		var c Column
-		if err := columnRow.Scan(&c.Ordinal, &c.Name, &c.Type, &c.IsNullable, &c.DefaultValue, &c.IsPrimaryKey, &c.Comment); err != nil {
+		if err := columnRow.Scan(&c.Ordinal, &c.ColumnName, &c.ColumnType, &c.IsNullable, &c.DefaultValue, &c.IsPrimaryKey, &c.Comment); err != nil {
 			return nil, err
 		}
 		columns = append(columns, &c)
@@ -71,7 +71,7 @@ group by table_schema, table_name, index_name, non_unique;
 	for indexRow.Next() {
 		var idx Index
 		var columns string
-		if err := indexRow.Scan(&idx.Schema, &idx.Table, &idx.Name, &idx.IsUnique, &columns); err != nil {
+		if err := indexRow.Scan(&idx.Schema, &idx.TableName, &idx.IndexName, &idx.IsUnique, &columns); err != nil {
 			return nil, err
 		}
 		idx.Columns = strings.Split(columns, ",")

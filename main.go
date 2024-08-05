@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/DanielLiu1123/gencoder/cmd"
 	"github.com/aymerick/raymond"
-	_ "github.com/aymerick/raymond"
 
 	// drivers
 	_ "github.com/go-sql-driver/mysql"
