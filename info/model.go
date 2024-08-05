@@ -2,12 +2,17 @@ package info
 
 import "database/sql"
 
+type TableInfo struct {
+	Table        *Table         `json:"table"`
+	Columns      []*Column      `json:"columns"`
+	Indexes      []*Index       `json:"indexes"`
+	IndexColumns []*IndexColumn `json:"index_columns"`
+}
+
 type Table struct {
-	Schema    string    `json:"schema"`
-	TableName string    `json:"table_name"`
-	Comment   string    `json:"comment"`
-	Columns   []*Column `json:"columns"`
-	Indexes   []*Index  `json:"indexes"`
+	Schema    string `json:"schema"`
+	TableName string `json:"table_name"`
+	Comment   string `json:"comment"`
 }
 
 type Column struct {
