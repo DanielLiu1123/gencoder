@@ -5,12 +5,12 @@
 package {{package}};
 
 /**
- * {{name}} is a public record that represents a {{name}} entity.
- */
+* {{name}} is a public record that represents a {{name}} entity.
+*/
 public record {{name}} (
-    // gencoder block start: columns
-    {{#each columns}}
-        {{type}} {{name}},
-    {{/each}}
-    // gencoder block end: columns
+// gencoder block start: columns
+{{#each columns}}
+    {{name}} {{name}}{{#unless @last}},{{/unless}}
+{{/each}}
+// gencoder block end: columns
 ) {}

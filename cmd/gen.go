@@ -47,7 +47,13 @@ var genCmd = &cobra.Command{
 			}
 
 			for _, table := range dbCfg.Tables {
-				table, err := info.GenMySQLTable(context.Background(), db, "testdb", table.Name)
+				var scm string
+				if table.Schema == "" {
+					scm = dbCfg.Schema
+				} else {
+					scm = table.Schema
+				}
+				table, err := info.GenMySQLTable(context.Background(), db, scm, table.Name)
 				if err != nil {
 					panic(err)
 				}
@@ -58,7 +64,14 @@ var genCmd = &cobra.Command{
 						panic(err)
 					}
 
-					err = os.WriteFile(getFileName(tpl.Name, table), []byte(content), 0644)
+					fileName := getFileName(tpl.Name, table)
+
+					dir := filepath.Dir(fileName)
+					if err = os.MkdirAll(dir, 0755); err != nil {
+						panic(err)
+					}
+
+					err = os.WriteFile(fileName, []byte(content), 0644)
 					if err != nil {
 						panic(err)
 					}
@@ -70,12 +83,12 @@ var genCmd = &cobra.Command{
 }
 
 func getFileName(filenameTpl string, table *info.Table) string {
-	n, err := raymond.Parse(filenameTpl)
+	t, err := raymond.Parse(filenameTpl)
 	if err != nil {
 		panic(err)
 	}
 
-	fileName, err := n.Exec(table)
+	fileName, err := t.Exec(table)
 	if err != nil {
 		panic(err)
 	}

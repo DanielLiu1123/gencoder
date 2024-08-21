@@ -26,5 +26,5 @@ tables:
 ## Usage
 
 ```shell
-gencoder -f gencoder.yml
+gencoder gen -c gencoder.yaml
 ```

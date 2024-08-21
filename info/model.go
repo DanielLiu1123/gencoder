@@ -1,44 +1,31 @@
 package info
 
-import "database/sql"
-
-type TableInfo struct {
-	Table        *Table         `json:"table"`
-	Columns      []*Column      `json:"columns"`
-	Indexes      []*Index       `json:"indexes"`
-	IndexColumns []*IndexColumn `json:"index_columns"`
-}
-
 type Table struct {
-	Schema    string `json:"schema"`
-	TableName string `json:"table_name"`
-	Comment   string `json:"comment"`
+	Schema  string
+	Name    string
+	Comment string
+	Columns []*Column
+	Indexes []*Index
 }
 
 type Column struct {
-	Schema       string         `json:"schema"`
-	TableName    string         `json:"table_name"`
-	Ordinal      int            `json:"ordinal"`
-	ColumnName   string         `json:"column_name"`
-	ColumnType   string         `json:"column_type"`
-	IsNullable   bool           `json:"is_nullable"`
-	DefaultValue sql.NullString `json:"default_value"`
-	IsPrimaryKey bool           `json:"is_primary_key"`
-	Comment      sql.NullString `json:"comment"`
+	Ordinal      int
+	Name         string
+	Type         string
+	IsNullable   bool
+	DefaultValue *string
+	IsPrimaryKey bool
+	Comment      *string
 }
 
 type Index struct {
-	Schema    string `json:"schema"`
-	TableName string `json:"table_name"`
-	IndexName string `json:"index_name"`
-	IsUnique  bool   `json:"is_unique"`
-	IsPrimary bool   `json:"is_primary"`
+	Name         string
+	IsUnique     bool
+	IsPrimary    bool
+	IndexColumns []*IndexColumn
 }
 
 type IndexColumn struct {
-	Schema     string `json:"schema"`
-	TableName  string `json:"table_name"`
-	Ordinal    int    `json:"ordinal"`
-	IndexName  string `json:"index_name"`
-	ColumnName string `json:"column_name"`
+	Ordinal    int
+	ColumnName string
 }

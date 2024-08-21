@@ -3,82 +3,106 @@ package info
 import (
 	"context"
 	"database/sql"
-	"strings"
 )
 
-// GenMySQLTable generates a MySQL table.
+// GenMySQLTable generates a MySQL table and fills the Table structure.
 func GenMySQLTable(ctx context.Context, db *sql.DB, schema, table string) (*Table, error) {
-
-	// table info
+	// Table info
 	const tableSql = `
-select table_schema  as table_schema,
-       table_name    as name,
-       table_comment as comment
+select table_schema,
+       table_name,
+       table_comment
 from information_schema.tables
 where table_schema = ?
   and table_name = ?;
 `
 	tableRow := db.QueryRowContext(ctx, tableSql, schema, table)
 	var t Table
-	if err := tableRow.Scan(&t.Schema, &t.TableName, &t.Comment); err != nil {
+	if err := tableRow.Scan(&t.Schema, &t.Name, &t.Comment); err != nil {
 		return nil, err
 	}
 
-	// columns info
+	// Columns info
 	const columnsSql = `
-select ordinal_position                     as ordinal,
-       column_name                          as name,
-       column_type                          as type,
-       if(is_nullable = 'YES', true, false) as is_nullable,
-       column_default                       as default_value,
-       if(column_key = 'PRI', true, false)  as is_primary_key,
-       column_comment                       as comment
-from information_schema.columns t
+select ordinal_position,
+       column_name,
+       column_type,
+       is_nullable = 'YES' as is_nullable,
+       column_default,
+       column_key = 'PRI' as is_primary_key,
+       column_comment
+from information_schema.columns
 where table_schema = ?
   and table_name = ?
-order by ordinal;
+order by ordinal_position;
 `
-	columnRow, err := db.QueryContext(ctx, columnsSql, schema, table)
+	columnRows, err := db.QueryContext(ctx, columnsSql, schema, table)
 	if err != nil {
 		return nil, err
 	}
+	defer columnRows.Close()
+
 	var columns []*Column
-	for columnRow.Next() {
-		var c Column
-		if err := columnRow.Scan(&c.Ordinal, &c.ColumnName, &c.ColumnType, &c.IsNullable, &c.DefaultValue, &c.IsPrimaryKey, &c.Comment); err != nil {
+	for columnRows.Next() {
+		var col Column
+		if err := columnRows.Scan(&col.Ordinal, &col.Name, &col.Type, &col.IsNullable, &col.DefaultValue, &col.IsPrimaryKey, &col.Comment); err != nil {
 			return nil, err
 		}
-		columns = append(columns, &c)
+		columns = append(columns, &col)
 	}
+	t.Columns = columns
 
-	// indexes info
+	// Indexes and IndexColumns info
 	const indexesSql = `
-select table_schema                                    as 'scheme',
-       table_name                                      as 'table',
-       index_name                                      as name,
-       if(non_unique = 0, true, false)                 as is_unique,
-       group_concat(column_name order by seq_in_index) as columns
+select index_name,
+       non_unique = 0 as is_unique,
+       index_name = 'PRIMARY' as is_primary,
+       seq_in_index as ordinal,
+       column_name
 from information_schema.statistics
 where table_schema = ?
   and table_name = ?
-group by table_schema, table_name, index_name, non_unique;
+order by index_name, seq_in_index;
 `
-	indexRow, err := db.QueryContext(ctx, indexesSql, schema, table)
+	indexRows, err := db.QueryContext(ctx, indexesSql, schema, table)
 	if err != nil {
 		return nil, err
 	}
-	var indexes []*Index
-	for indexRow.Next() {
-		var idx Index
-		var columns string
-		if err := indexRow.Scan(&idx.Schema, &idx.TableName, &idx.IndexName, &idx.IsUnique, &columns); err != nil {
+	defer indexRows.Close()
+
+	indexMap := make(map[string]*Index)
+	for indexRows.Next() {
+		var indexName, columnName string
+		var isUnique, isPrimary bool
+		var ordinal int
+
+		if err := indexRows.Scan(&indexName, &isUnique, &isPrimary, &ordinal, &columnName); err != nil {
 			return nil, err
 		}
-		idx.Columns = strings.Split(columns, ",")
-		indexes = append(indexes, &idx)
+
+		// 如果此 index 还未在 map 中记录，则添加它
+		if _, exists := indexMap[indexName]; !exists {
+			indexMap[indexName] = &Index{
+				Name:         indexName,
+				IsUnique:     isUnique,
+				IsPrimary:    isPrimary,
+				IndexColumns: []*IndexColumn{},
+			}
+		}
+
+		// 添加 IndexColumn 到对应的 Index 中
+		indexMap[indexName].IndexColumns = append(indexMap[indexName].IndexColumns, &IndexColumn{
+			Ordinal:    ordinal,
+			ColumnName: columnName,
+		})
 	}
 
-	t.Columns = columns
+	// 从 map 中提取所有索引
+	var indexes []*Index
+	for _, index := range indexMap {
+		indexes = append(indexes, index)
+	}
 	t.Indexes = indexes
+
 	return &t, nil
 }

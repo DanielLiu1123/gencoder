@@ -6,12 +6,13 @@ block-marker:
 databases:
   - name: mysql
     dsn: 'mysql://root:123456@localhost:3306/testdb'
-    extra-properties:
+    schema: testdb
+    properties:
       - name: package
         value: example
     tables:
       - name: 'user'
-        extra-properties:
+        properties:
           - name: package
             value: example.order
         ignore-columns:
