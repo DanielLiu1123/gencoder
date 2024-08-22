@@ -1,8 +1,11 @@
 package cmd
 
 import (
+	"github.com/aymerick/raymond"
 	"github.com/spf13/cobra"
 	"os"
+	"regexp"
+	"strings"
 )
 
 var gencoderCmd = &cobra.Command{
@@ -17,7 +20,23 @@ to quickly create a Cobra application.`,
 }
 
 func init() {
+
+	registerHelperFunctions()
+
 	gencoderCmd.AddCommand(genCmd)
+}
+
+func registerHelperFunctions() {
+	raymond.RegisterHelper("replaceAll", func(target, old, new string) string {
+		return strings.ReplaceAll(target, old, new)
+	})
+	raymond.RegisterHelper("match", func(target, pattern string) bool {
+		match, err := regexp.MatchString(pattern, target)
+		if err != nil {
+			panic(err)
+		}
+		return match
+	})
 }
 
 func Execute() {

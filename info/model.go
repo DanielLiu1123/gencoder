@@ -19,13 +19,13 @@ type Column struct {
 }
 
 type Index struct {
-	Name         string
-	IsUnique     bool
-	IsPrimary    bool
-	IndexColumns []*IndexColumn
+	Name      string
+	IsUnique  bool
+	IsPrimary bool
+	Columns   []*IndexColumn
 }
 
 type IndexColumn struct {
-	Ordinal    int
-	ColumnName string
+	Ordinal int
+	Name    string
 }

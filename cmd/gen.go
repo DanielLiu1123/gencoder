@@ -40,31 +40,55 @@ var genCmd = &cobra.Command{
 			panic(err)
 		}
 
+		// register partials
+		for _, t := range templates {
+			if t.GeneratedFileName == "" {
+				raymond.RegisterPartial(t.TemplateName, t.Source)
+			}
+		}
+
 		for _, dbCfg := range cfg.Databases {
 			db, err := dburl.Open(dbCfg.Dsn)
 			if err != nil {
 				panic(err)
 			}
+			defer db.Close()
 
-			for _, table := range dbCfg.Tables {
+			for _, tbCfg := range dbCfg.Tables {
 				var scm string
-				if table.Schema == "" {
+				if tbCfg.Schema == "" {
 					scm = dbCfg.Schema
 				} else {
-					scm = table.Schema
+					scm = tbCfg.Schema
 				}
-				table, err := info.GenMySQLTable(context.Background(), db, scm, table.Name)
+				table, err := info.GenMySQLTable(context.Background(), db, scm, tbCfg.Name)
 				if err != nil {
 					panic(err)
 				}
 
+				var ctx renderCtx
+				ctx.Table = table
+				ctx.Properties = make(map[string]string)
+				for _, prop := range dbCfg.Properties {
+					ctx.Properties[prop.Name] = prop.Value
+				}
+				for _, prop := range tbCfg.Properties {
+					ctx.Properties[prop.Name] = prop.Value
+				}
+
 				for _, tpl := range templates {
-					content, err := tpl.Template.Exec(table)
+
+					// Maybe a partial template
+					if tpl.GeneratedFileName == "" {
+						continue
+					}
+
+					content, err := tpl.Template.Exec(ctx)
 					if err != nil {
 						panic(err)
 					}
 
-					fileName := getFileName(tpl.Name, table)
+					fileName := getFileName(tpl.GeneratedFileName, &ctx)
 
 					dir := filepath.Dir(fileName)
 					if err = os.MkdirAll(dir, 0755); err != nil {
@@ -82,13 +106,13 @@ var genCmd = &cobra.Command{
 	},
 }
 
-func getFileName(filenameTpl string, table *info.Table) string {
+func getFileName(filenameTpl string, ctx *renderCtx) string {
 	t, err := raymond.Parse(filenameTpl)
 	if err != nil {
 		panic(err)
 	}
 
-	fileName, err := t.Exec(table)
+	fileName, err := t.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -140,8 +164,10 @@ func loadTemplates(dir string) ([]*tpl, error) {
 		}
 
 		t := &tpl{
-			Name:     getFileNameTemplate(&content),
-			Template: template,
+			TemplateName:      d.Name(),
+			GeneratedFileName: getFileNameTemplate(&content),
+			Source:            content,
+			Template:          template,
 		}
 
 		templates = append(templates, t)
@@ -165,10 +191,18 @@ func getFileNameTemplate(content *string) string {
 		}
 	}
 
-	panic(fileNamePrefix + " not found")
+	// Maybe a partial template
+	return ""
 }
 
 type tpl struct {
-	Name     string
-	Template *raymond.Template
+	TemplateName      string
+	GeneratedFileName string
+	Source            string
+	Template          *raymond.Template
+}
+
+type renderCtx struct {
+	Table      *info.Table
+	Properties map[string]string
 }

@@ -1,0 +1,5 @@
+{{#if (match columnType 'varchar.*|text')}}String{{/if ~}}
+{{#if (match columnType 'bigint|int64')}}Long{{/if ~}}
+{{#if (match columnType '.*int.*')}}Integer{{/if ~}}
+{{#if (match columnType 'timestamp')}}java.util.Date{{/if ~}}
+{{#if (match columnType 'enum.*')}}String{{/if ~}}

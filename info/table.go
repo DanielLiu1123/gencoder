@@ -3,6 +3,7 @@ package info
 import (
 	"context"
 	"database/sql"
+	"sort"
 )
 
 // GenMySQLTable generates a MySQL table and fills the Table structure.
@@ -52,7 +53,7 @@ order by ordinal_position;
 	}
 	t.Columns = columns
 
-	// Indexes and IndexColumns info
+	// Indexes and Columns info
 	const indexesSql = `
 select index_name,
        non_unique = 0 as is_unique,
@@ -80,28 +81,36 @@ order by index_name, seq_in_index;
 			return nil, err
 		}
 
-		// 如果此 index 还未在 map 中记录，则添加它
 		if _, exists := indexMap[indexName]; !exists {
 			indexMap[indexName] = &Index{
-				Name:         indexName,
-				IsUnique:     isUnique,
-				IsPrimary:    isPrimary,
-				IndexColumns: []*IndexColumn{},
+				Name:      indexName,
+				IsUnique:  isUnique,
+				IsPrimary: isPrimary,
+				Columns:   []*IndexColumn{},
 			}
 		}
 
-		// 添加 IndexColumn 到对应的 Index 中
-		indexMap[indexName].IndexColumns = append(indexMap[indexName].IndexColumns, &IndexColumn{
-			Ordinal:    ordinal,
-			ColumnName: columnName,
+		indexMap[indexName].Columns = append(indexMap[indexName].Columns, &IndexColumn{
+			Ordinal: ordinal,
+			Name:    columnName,
 		})
 	}
 
-	// 从 map 中提取所有索引
 	var indexes []*Index
 	for _, index := range indexMap {
 		indexes = append(indexes, index)
 	}
+
+	sort.Slice(indexes, func(i, j int) bool {
+		if indexes[i].IsPrimary != indexes[j].IsPrimary {
+			return indexes[i].IsPrimary
+		}
+		if indexes[i].IsUnique != indexes[j].IsUnique {
+			return indexes[i].IsUnique
+		}
+		return indexes[i].Name < indexes[j].Name
+	})
+
 	t.Indexes = indexes
 
 	return &t, nil

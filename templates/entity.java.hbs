@@ -1,16 +1,24 @@
 /**
- * gencoder generated file: src/main/{{package}}/{{name}}.java
+ * gencoder generated file: src/main/{{replaceAll properties.package '.' '/'}}/{{table.name}}.java
  */
 
-package {{package}};
+package {{properties.package}};
 
 /**
-* {{name}} is a public record that represents a {{name}} entity.
-*/
-public record {{name}} (
-// gencoder block start: columns
-{{#each columns}}
-    {{name}} {{name}}{{#unless @last}},{{/unless}}
+ * gencoder block start: table info
+ * table: {{table.name}}
+ * comment: {{table.comment}}
+ * indexes:
+{{#each table.indexes}}
+ *   {{name}}: ({{#each columns}}{{name}}{{#unless @last}}, {{/unless}}{{/each}})
 {{/each}}
-// gencoder block end: columns
+ * gencoder block end: table info
+ */
+public record {{table.name}} (
+    // gencoder block start: columns
+{{#each table.columns}}
+    /** {{comment}} */
+    {{> 'type.partial.hbs' columnType=type}} {{name}}{{#unless @last}},{{/unless}}
+{{/each}}
+    // gencoder block end: columns
 ) {}

@@ -9,10 +9,10 @@ type Config struct {
 		Schema     string      `yaml:"schema"`
 		Properties []*Property `yaml:"properties"`
 		Tables     []*struct {
-			Schema          string      `yaml:"schema"`
-			Name            string      `yaml:"name"`
-			ExtraProperties []*Property `yaml:"properties"`
-			IgnoreColumns   []string    `yaml:"ignore-columns"`
+			Schema        string      `yaml:"schema"`
+			Name          string      `yaml:"name"`
+			Properties    []*Property `yaml:"properties"`
+			IgnoreColumns []string    `yaml:"ignore-columns"`
 		}
 	}
 }
