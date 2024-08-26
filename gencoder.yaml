@@ -8,12 +8,10 @@ databases:
     dsn: 'mysql://root:123456@localhost:3306/testdb'
     schema: testdb
     properties:
-      - name: package
-        value: example
+      package: example
     tables:
       - name: 'user'
         properties:
-          - name: package
-            value: example.order
+          package: example.order
         ignore-columns:
           - deleted_at

@@ -69,11 +69,11 @@ var genCmd = &cobra.Command{
 				var ctx renderCtx
 				ctx.Table = table
 				ctx.Properties = make(map[string]string)
-				for _, prop := range dbCfg.Properties {
-					ctx.Properties[prop.Name] = prop.Value
+				for k, v := range dbCfg.Properties {
+					ctx.Properties[k] = v
 				}
-				for _, prop := range tbCfg.Properties {
-					ctx.Properties[prop.Name] = prop.Value
+				for k, v := range tbCfg.Properties {
+					ctx.Properties[k] = v
 				}
 
 				for _, tpl := range templates {
