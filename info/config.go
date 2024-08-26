@@ -1,15 +1,17 @@
 package info
 
 type Config struct {
-	TemplatesDir string       `yaml:"templates-dir"`
-	BlockMarker  *BlockMarker `yaml:"block-marker"`
-	Databases    []*struct {
-		Name       string            `yaml:"name"`
-		Dsn        string            `yaml:"dsn"`
-		Schema     string            `yaml:"schema"`
-		Properties map[string]string `yaml:"properties"`
-		Tables     []*TableConfig
-	}
+	TemplatesDir string            `yaml:"templates-dir"`
+	BlockMarker  *BlockMarker      `yaml:"block-marker"`
+	Databases    []*DatabaseConfig `yaml:"databases"`
+}
+
+type DatabaseConfig struct {
+	Name       string            `yaml:"name"`
+	Dsn        string            `yaml:"dsn"`
+	Schema     string            `yaml:"schema"`
+	Properties map[string]string `yaml:"properties"`
+	Tables     []*TableConfig    `yaml:"tables"`
 }
 
 type TableConfig struct {
