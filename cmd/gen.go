@@ -2,7 +2,10 @@ package cmd
 
 import (
 	"bufio"
+	"bytes"
 	"context"
+	"errors"
+	"fmt"
 	"github.com/DanielLiu1123/gencoder/info"
 	"github.com/aymerick/raymond"
 	"github.com/spf13/cobra"
@@ -90,14 +93,22 @@ var genCmd = &cobra.Command{
 
 					fileName := getFileName(tpl.GeneratedFileName, &ctx)
 
-					dir := filepath.Dir(fileName)
-					if err = os.MkdirAll(dir, 0755); err != nil {
-						panic(err)
-					}
+					if _, err := os.Stat(fileName); err == nil {
+						// File exists, replace specific block
+						err = replaceBlockInFile(fileName, content, tpl.BlockID)
+						if err != nil {
+							panic(err)
+						}
+					} else {
+						dir := filepath.Dir(fileName)
+						if err = os.MkdirAll(dir, 0755); err != nil {
+							panic(err)
+						}
 
-					err = os.WriteFile(fileName, []byte(content), 0644)
-					if err != nil {
-						panic(err)
+						err = os.WriteFile(fileName, []byte(content), 0644)
+						if err != nil {
+							panic(err)
+						}
 					}
 				}
 
@@ -200,6 +211,27 @@ func getFileNameTemplate(content *string, cfg *info.Config) string {
 
 	// Maybe a partial template
 	return ""
+}
+
+func replaceBlockInFile(fileName, newContent, blockID string) error {
+	fileData, err := os.ReadFile(fileName)
+	if err != nil {
+		return err
+	}
+
+	startTag := fmt.Sprintf("gencoder block start: %s", blockID)
+	endTag := fmt.Sprintf("gencoder block end: %s", blockID)
+
+	startIndex := bytes.Index(fileData, []byte(startTag))
+	endIndex := bytes.Index(fileData, []byte(endTag))
+	if startIndex == -1 || endIndex == -1 || startIndex > endIndex {
+		return errors.New("block not found or malformed")
+	}
+
+	// Replace the content between the start and end tags
+	newFileData := append(fileData[:startIndex+len(startTag)], append([]byte(newContent), fileData[endIndex:]...)...)
+
+	return os.WriteFile(fileName, newFileData, 0644)
 }
 
 type tpl struct {
