@@ -55,13 +55,13 @@ var genCmd = &cobra.Command{
 			defer db.Close()
 
 			for _, tbCfg := range dbCfg.Tables {
-				var scm string
+				var schema string
 				if tbCfg.Schema == "" {
-					scm = dbCfg.Schema
+					schema = dbCfg.Schema
 				} else {
-					scm = tbCfg.Schema
+					schema = tbCfg.Schema
 				}
-				table, err := info.GenMySQLTable(context.Background(), db, scm, tbCfg.Name)
+				table, err := info.GenMySQLTable(context.Background(), db, schema, tbCfg.Name)
 				if err != nil {
 					panic(err)
 				}
@@ -196,10 +196,10 @@ func getFileNameTemplate(content *string) string {
 }
 
 type tpl struct {
-	TemplateName      string
-	GeneratedFileName string
-	Source            string
-	Template          *raymond.Template
+	TemplateName      string            // template file name
+	GeneratedFileName string            // generated file name, if empty, it's a partial template
+	Source            string            // template source code
+	Template          *raymond.Template // compiled template
 }
 
 type renderCtx struct {
