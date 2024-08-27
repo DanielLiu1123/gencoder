@@ -6,18 +6,20 @@ package {{properties.package}};
 
 /**
  * gencoder block start: table info
- * table: {{table.name}}
- * comment: {{table.comment}}
- * indexes:
+ * <p> table: {{table.name}}
+ * <p> comment: {{table.comment}}
+ * <p> indexes:
 {{#each table.indexes}}
- *   {{name}}: ({{#each columns}}{{name}}{{#unless @last}}, {{/unless}}{{/each}})
+ *   <p> {{name}}: ({{#each columns}}{{name}}{{#unless @last}}, {{/unless}}{{/each}})
 {{/each}}
  * gencoder block end: table info
  */
 public record {{table.name}} (
     // gencoder block start: columns
 {{#each table.columns}}
-    /** {{comment}} */
+    /**
+     * {{comment}}
+     */
     {{> 'type.partial.hbs' columnType=type}} {{name}}{{#unless @last}},{{/unless}}
 {{/each}}
     // gencoder block end: columns
