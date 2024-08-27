@@ -2,6 +2,7 @@ package info
 
 type Config struct {
 	TemplatesDir string            `yaml:"templates-dir"`
+	OutputMarker string            `yaml:"output-marker"`
 	BlockMarker  *BlockMarker      `yaml:"block-marker"`
 	Databases    []*DatabaseConfig `yaml:"databases"`
 }

@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	fileNamePrefix = "gencoder generated file:"
+	defaultOutputMarker = "gencoder generated file:"
 )
 
 var (
@@ -23,7 +23,7 @@ var (
 )
 
 func init() {
-	config = genCmd.Flags().StringP("config", "c", "gencoder.yaml", "config file to use")
+	config = genCmd.Flags().StringP("config", "f", "gencoder.yaml", "config file to use")
 }
 
 var genCmd = &cobra.Command{
@@ -35,7 +35,7 @@ var genCmd = &cobra.Command{
 			panic(err)
 		}
 
-		templates, err := loadTemplates(cfg.TemplatesDir)
+		templates, err := loadTemplates(cfg)
 		if err != nil {
 			panic(err)
 		}
@@ -135,10 +135,10 @@ func readConfig() (*info.Config, error) {
 	return &config, nil
 }
 
-func loadTemplates(dir string) ([]*tpl, error) {
+func loadTemplates(cfg *info.Config) ([]*tpl, error) {
 	var templates []*tpl
 
-	err := filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
+	err := filepath.WalkDir(cfg.TemplatesDir, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -165,7 +165,7 @@ func loadTemplates(dir string) ([]*tpl, error) {
 
 		t := &tpl{
 			TemplateName:      d.Name(),
-			GeneratedFileName: getFileNameTemplate(&content),
+			GeneratedFileName: getFileNameTemplate(&content, cfg),
 			Source:            content,
 			Template:          template,
 		}
@@ -181,13 +181,20 @@ func loadTemplates(dir string) ([]*tpl, error) {
 	return templates, nil
 }
 
-func getFileNameTemplate(content *string) string {
+func getFileNameTemplate(content *string, cfg *info.Config) string {
 	scanner := bufio.NewScanner(strings.NewReader(*content))
+
+	var generatedFileName string
+	if cfg.OutputMarker != "" {
+		generatedFileName = cfg.OutputMarker
+	} else {
+		generatedFileName = defaultOutputMarker
+	}
 
 	for scanner.Scan() {
 		line := scanner.Text()
-		if strings.Contains(line, fileNamePrefix) {
-			return strings.TrimSpace(line[strings.LastIndex(line, fileNamePrefix)+len(fileNamePrefix):])
+		if strings.Contains(line, generatedFileName) {
+			return strings.TrimSpace(line[strings.LastIndex(line, generatedFileName)+len(generatedFileName):])
 		}
 	}
 
