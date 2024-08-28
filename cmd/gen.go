@@ -93,23 +93,33 @@ var genCmd = &cobra.Command{
 
 					fileName := getFileName(tpl.GeneratedFileName, &ctx)
 
-					if _, err := os.Stat(fileName); err == nil {
-						// File exists, replace specific block
-						err = replaceBlockInFile(fileName, content, tpl.BlockID)
-						if err != nil {
-							panic(err)
-						}
-					} else {
-						dir := filepath.Dir(fileName)
-						if err = os.MkdirAll(dir, 0755); err != nil {
-							panic(err)
-						}
-
-						err = os.WriteFile(fileName, []byte(content), 0644)
-						if err != nil {
-							panic(err)
-						}
+					dir := filepath.Dir(fileName)
+					if err = os.MkdirAll(dir, 0755); err != nil {
+						panic(err)
 					}
+
+					err = os.WriteFile(fileName, []byte(content), 0644)
+					if err != nil {
+						panic(err)
+					}
+					//
+					//if _, err := os.Stat(fileName); err == nil {
+					//	// File exists, replace specific block
+					//	err = replaceBlockInFile(fileName, content, tpl.BlockID)
+					//	if err != nil {
+					//		panic(err)
+					//	}
+					//} else {
+					//	dir := filepath.Dir(fileName)
+					//	if err = os.MkdirAll(dir, 0755); err != nil {
+					//		panic(err)
+					//	}
+					//
+					//	err = os.WriteFile(fileName, []byte(content), 0644)
+					//	if err != nil {
+					//		panic(err)
+					//	}
+					//}
 				}
 
 			}
