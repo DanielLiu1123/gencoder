@@ -3,7 +3,7 @@ package info
 type Config struct {
 	TemplatesDir string            `yaml:"templates-dir"`
 	OutputMarker string            `yaml:"output-marker"`
-	BlockMarker  *BlockMarker      `yaml:"block-marker"`
+	BlockMarker  BlockMarker       `yaml:"block-marker"`
 	Databases    []*DatabaseConfig `yaml:"databases"`
 }
 
@@ -25,4 +25,32 @@ type TableConfig struct {
 type BlockMarker struct {
 	Start string `yaml:"start"`
 	End   string `yaml:"end"`
+}
+
+func (c Config) GetTemplatesDir() string {
+	if c.TemplatesDir == "" {
+		return "templates"
+	}
+	return c.TemplatesDir
+}
+
+func (c Config) GetOutputMarker() string {
+	if c.OutputMarker == "" {
+		return "gencoder generated file:"
+	}
+	return c.OutputMarker
+}
+
+func (e BlockMarker) GetStart() string {
+	if e.Start == "" {
+		return "gencoder block start:"
+	}
+	return e.Start
+}
+
+func (e BlockMarker) GetEnd() string {
+	if e.End == "" {
+		return "gencoder block end:"
+	}
+	return e.End
 }

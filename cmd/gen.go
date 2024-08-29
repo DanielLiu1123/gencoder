@@ -2,10 +2,7 @@ package cmd
 
 import (
 	"bufio"
-	"bytes"
 	"context"
-	"errors"
-	"fmt"
 	"github.com/DanielLiu1123/gencoder/info"
 	"github.com/aymerick/raymond"
 	"github.com/spf13/cobra"
@@ -15,10 +12,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-)
-
-const (
-	defaultOutputMarker = "gencoder generated file:"
 )
 
 var (
@@ -93,33 +86,23 @@ var genCmd = &cobra.Command{
 
 					fileName := getFileName(tpl.GeneratedFileName, &ctx)
 
-					dir := filepath.Dir(fileName)
-					if err = os.MkdirAll(dir, 0755); err != nil {
-						panic(err)
-					}
+					if _, err := os.Stat(fileName); err == nil {
+						// File exists, replace specific block
+						err = replaceBlockInFile(cfg, fileName, content)
+						if err != nil {
+							panic(err)
+						}
+					} else {
+						dir := filepath.Dir(fileName)
+						if err = os.MkdirAll(dir, 0755); err != nil {
+							panic(err)
+						}
 
-					err = os.WriteFile(fileName, []byte(content), 0644)
-					if err != nil {
-						panic(err)
+						err = os.WriteFile(fileName, []byte(content), 0644)
+						if err != nil {
+							panic(err)
+						}
 					}
-					//
-					//if _, err := os.Stat(fileName); err == nil {
-					//	// File exists, replace specific block
-					//	err = replaceBlockInFile(fileName, content, tpl.BlockID)
-					//	if err != nil {
-					//		panic(err)
-					//	}
-					//} else {
-					//	dir := filepath.Dir(fileName)
-					//	if err = os.MkdirAll(dir, 0755); err != nil {
-					//		panic(err)
-					//	}
-					//
-					//	err = os.WriteFile(fileName, []byte(content), 0644)
-					//	if err != nil {
-					//		panic(err)
-					//	}
-					//}
 				}
 
 			}
@@ -159,7 +142,7 @@ func readConfig() (*info.Config, error) {
 func loadTemplates(cfg *info.Config) ([]*tpl, error) {
 	var templates []*tpl
 
-	err := filepath.WalkDir(cfg.TemplatesDir, func(path string, d fs.DirEntry, err error) error {
+	err := filepath.WalkDir(cfg.GetTemplatesDir(), func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -205,12 +188,7 @@ func loadTemplates(cfg *info.Config) ([]*tpl, error) {
 func getFileNameTemplate(content *string, cfg *info.Config) string {
 	scanner := bufio.NewScanner(strings.NewReader(*content))
 
-	var generatedFileName string
-	if cfg.OutputMarker != "" {
-		generatedFileName = cfg.OutputMarker
-	} else {
-		generatedFileName = defaultOutputMarker
-	}
+	var generatedFileName = cfg.GetOutputMarker()
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -223,25 +201,87 @@ func getFileNameTemplate(content *string, cfg *info.Config) string {
 	return ""
 }
 
-func replaceBlockInFile(fileName, newContent, blockID string) error {
+func replaceBlockInFile(cfg *info.Config, fileName, newContent string) error {
 	fileData, err := os.ReadFile(fileName)
 	if err != nil {
 		return err
 	}
 
-	startTag := fmt.Sprintf("gencoder block start: %s", blockID)
-	endTag := fmt.Sprintf("gencoder block end: %s", blockID)
+	newBlocks := buildBlocks(cfg, newContent)
 
-	startIndex := bytes.Index(fileData, []byte(startTag))
-	endIndex := bytes.Index(fileData, []byte(endTag))
-	if startIndex == -1 || endIndex == -1 || startIndex > endIndex {
-		return errors.New("block not found or malformed")
+	var newFileData strings.Builder
+	scanner := bufio.NewScanner(strings.NewReader(string(fileData)))
+	var insideBlock bool
+	var currentBlockID string
+
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		if strings.Contains(line, cfg.BlockMarker.GetStart()) {
+			startIndex := strings.Index(line, cfg.BlockMarker.GetStart()) + len(cfg.BlockMarker.GetStart())
+			currentBlockID = strings.TrimSpace(line[startIndex:])
+
+			if newBlock, ok := newBlocks[currentBlockID]; ok {
+				newFileData.WriteString(cfg.BlockMarker.GetStart() + " " + currentBlockID + "\n")
+				newFileData.WriteString(newBlock)
+				insideBlock = true
+			} else {
+				newFileData.WriteString(line + "\n")
+				insideBlock = true
+			}
+		} else if strings.Contains(line, cfg.BlockMarker.GetEnd()) && insideBlock {
+			if _, ok := newBlocks[currentBlockID]; ok {
+				newFileData.WriteString(cfg.BlockMarker.GetEnd() + " " + currentBlockID + "\n")
+			} else {
+				newFileData.WriteString(line + "\n")
+			}
+			insideBlock = false
+		} else if !insideBlock {
+			newFileData.WriteString(line + "\n")
+		}
 	}
 
-	// Replace the content between the start and end tags
-	newFileData := append(fileData[:startIndex+len(startTag)], append([]byte(newContent), fileData[endIndex:]...)...)
+	// TODO(Freeman): test this function
+	return os.WriteFile(fileName, []byte(newFileData.String()), 0644)
+}
 
-	return os.WriteFile(fileName, newFileData, 0644)
+func buildBlocks(cfg *info.Config, content string) map[string]string {
+	scanner := bufio.NewScanner(strings.NewReader(content))
+
+	blocks := make(map[string]string)
+	var blockID string
+	var blockContent strings.Builder
+	insideBlock := false
+
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		if strings.Contains(line, cfg.BlockMarker.GetStart()) {
+			if blockID != "" && insideBlock {
+				blocks[blockID] = blockContent.String()
+				blockContent.Reset()
+			}
+			startIndex := strings.Index(line, cfg.BlockMarker.GetStart()) + len(cfg.BlockMarker.GetStart())
+			blockID = strings.TrimSpace(line[startIndex:])
+			insideBlock = true
+		} else if strings.Contains(line, cfg.BlockMarker.GetEnd()) {
+			if insideBlock {
+				blocks[blockID] = blockContent.String()
+				blockID = ""
+				blockContent.Reset()
+				insideBlock = false
+			}
+		} else if insideBlock {
+			blockContent.WriteString(line)
+			blockContent.WriteString("\n")
+		}
+	}
+
+	if blockID != "" && insideBlock {
+		blocks[blockID] = blockContent.String()
+	}
+
+	return blocks
 }
 
 type tpl struct {
