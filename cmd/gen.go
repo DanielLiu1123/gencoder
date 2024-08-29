@@ -79,7 +79,7 @@ var genCmd = &cobra.Command{
 						continue
 					}
 
-					content, err := tpl.Template.Exec(ctx)
+					newContent, err := tpl.Template.Exec(ctx)
 					if err != nil {
 						panic(err)
 					}
@@ -88,7 +88,17 @@ var genCmd = &cobra.Command{
 
 					if _, err := os.Stat(fileName); err == nil {
 						// File exists, replace specific block
-						err = replaceBlockInFile(cfg, fileName, content)
+						oldContent, err := readFile(fileName)
+						if err != nil {
+							panic(err)
+						}
+
+						realContent, err := replaceBlockInFile(cfg, oldContent, newContent)
+						if err != nil {
+							panic(err)
+						}
+
+						err = os.WriteFile(fileName, []byte(realContent), 0644)
 						if err != nil {
 							panic(err)
 						}
@@ -98,7 +108,7 @@ var genCmd = &cobra.Command{
 							panic(err)
 						}
 
-						err = os.WriteFile(fileName, []byte(content), 0644)
+						err = os.WriteFile(fileName, []byte(newContent), 0644)
 						if err != nil {
 							panic(err)
 						}
@@ -201,16 +211,11 @@ func getFileNameTemplate(content *string, cfg *info.Config) string {
 	return ""
 }
 
-func replaceBlockInFile(cfg *info.Config, fileName, newContent string) error {
-	fileData, err := os.ReadFile(fileName)
-	if err != nil {
-		return err
-	}
-
+func replaceBlockInFile(cfg *info.Config, originalContent, newContent string) (string, error) {
 	newBlocks := buildBlocks(cfg, newContent)
 
 	var newFileData strings.Builder
-	scanner := bufio.NewScanner(strings.NewReader(string(fileData)))
+	scanner := bufio.NewScanner(strings.NewReader(originalContent))
 	var insideBlock bool
 	var currentBlockID string
 
@@ -241,8 +246,15 @@ func replaceBlockInFile(cfg *info.Config, fileName, newContent string) error {
 		}
 	}
 
-	// TODO(Freeman): test this function
-	return os.WriteFile(fileName, []byte(newFileData.String()), 0644)
+	return newFileData.String(), nil
+}
+
+func readFile(filename string) (string, error) {
+	fileData, err := os.ReadFile(filename)
+	if err != nil {
+		return "", err
+	}
+	return string(fileData), nil
 }
 
 func buildBlocks(cfg *info.Config, content string) map[string]string {
