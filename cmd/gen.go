@@ -211,11 +211,12 @@ func getFileNameTemplate(content *string, cfg *info.Config) string {
 	return ""
 }
 
-func replaceBlockInFile(cfg *info.Config, originalContent, newContent string) (string, error) {
+func replaceBlockInFile(cfg *info.Config, oldContent, newContent string) (string, error) {
+	oldBlocks := buildBlocks(cfg, oldContent)
 	newBlocks := buildBlocks(cfg, newContent)
 
 	var newFileData strings.Builder
-	scanner := bufio.NewScanner(strings.NewReader(originalContent))
+	scanner := bufio.NewScanner(strings.NewReader(oldContent))
 	var insideBlock bool
 	var currentBlockID string
 
