@@ -3,11 +3,12 @@ package info
 import (
 	"context"
 	"database/sql"
+	"slices"
 	"sort"
 )
 
 // GenMySQLTable generates a MySQL table and fills the Table structure.
-func GenMySQLTable(ctx context.Context, db *sql.DB, schema, table string) (*Table, error) {
+func GenMySQLTable(ctx context.Context, db *sql.DB, schema, table string, ignoreColumns []string) (*Table, error) {
 	// Table info
 	const tableSql = `
 select table_schema,
@@ -49,6 +50,11 @@ order by ordinal_position;
 		if err := columnRows.Scan(&col.Ordinal, &col.Name, &col.Type, &col.IsNullable, &col.DefaultValue, &col.IsPrimaryKey, &col.Comment); err != nil {
 			return nil, err
 		}
+
+		if len(ignoreColumns) > 0 && slices.Contains(ignoreColumns, col.Name) {
+			continue
+		}
+
 		columns = append(columns, &col)
 	}
 	t.Columns = columns

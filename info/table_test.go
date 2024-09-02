@@ -21,7 +21,7 @@ func isDockerAvailable() bool {
 // Helper function to start a MySQL container
 func startMySQLContainer() (string, error) {
 	const containerID = "gencoder_test_mysql"
-	cmd := exec.Command("docker", "run", "--name", containerID, "-e", "MYSQL_ROOT_PASSWORD=123456", "-e", "MYSQL_DATABASE=testdb", "-p", "3306:3306", "-d", "mysql:latest")
+	cmd := exec.Command("docker", "run", "--name", containerID, "-e", "MYSQL_ROOT_PASSWORD=root", "-e", "MYSQL_DATABASE=testdb", "-p", "3306:3306", "-d", "mysql:latest")
 	if err := cmd.Run(); err != nil {
 		return "", err
 	}
@@ -56,7 +56,7 @@ func TestGenMySQLTable(t *testing.T) {
 	// Wait for MySQL to initialize
 	time.Sleep(10 * time.Second)
 
-	dsn := "root:123456@tcp(127.0.0.1:3306)/testdb"
+	dsn := "root:root@tcp(127.0.0.1:3306)/testdb"
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		t.Fatalf("Failed to connect to the database: %s", err)
@@ -68,14 +68,22 @@ func TestGenMySQLTable(t *testing.T) {
 		}
 	}(db)
 
-	_, err = db.Exec(`CREATE TABLE user (
-		id INT AUTO_INCREMENT PRIMARY KEY,
-		name VARCHAR(64) NOT NULL,
-		email VARCHAR(128),
-		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-		INDEX idx_name (name),
-		UNIQUE INDEX idx_email (email)
-	)`)
+	_, err = db.Exec(`CREATE TABLE testdb.user (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(64) NOT NULL COMMENT 'Username, required',
+        password VARCHAR(128) NOT NULL,
+        email VARCHAR(128) NOT NULL DEFAULT '' COMMENT 'User email, required',
+        first_name VARCHAR(64) COMMENT 'First name of the user',
+        last_name VARCHAR(64) COMMENT 'Last name of the user',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Record update timestamp',
+        status ENUM('active', 'inactive', 'suspended') DEFAULT 'active' COMMENT 'Account status',
+		deleted_at TIMESTAMP COMMENT 'Record deletion timestamp',
+        INDEX idx_name (username),
+        UNIQUE INDEX idx_email (email),
+        INDEX idx_status_created (status, created_at),
+        INDEX idx_full_name (first_name, last_name)
+    ) COMMENT='User account information';`)
 	if err != nil {
 		t.Fatalf("Failed to create test table: %s", err)
 	}
@@ -83,7 +91,7 @@ func TestGenMySQLTable(t *testing.T) {
 	schema := "testdb"
 	table := "user"
 
-	tb, err := GenMySQLTable(context.Background(), db, schema, table)
+	tb, err := GenMySQLTable(context.Background(), db, schema, table, []string{"deleted_at"})
 	if err != nil {
 		t.Fatalf("Failed to generate MySQL table: %s", err)
 	}
@@ -91,11 +99,11 @@ func TestGenMySQLTable(t *testing.T) {
 	assert.NotNil(t, tb)
 	assert.Equal(t, "testdb", tb.Schema)
 	assert.Equal(t, "user", tb.Name)
-	assert.Equal(t, "", tb.Comment)
+	assert.Equal(t, "User account information", tb.Comment)
 
-	assert.Equal(t, 4, len(tb.Columns))
+	assert.Equal(t, 9, len(tb.Columns))
 	assert.Equal(t, true, tb.Columns[0].IsPrimaryKey)
 	assert.Equal(t, false, tb.Columns[1].IsPrimaryKey)
 
-	assert.Equal(t, 3, len(tb.Indexes))
+	assert.Equal(t, 5, len(tb.Indexes))
 }

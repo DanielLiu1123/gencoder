@@ -23,7 +23,7 @@ func init() {
 
 	registerHelperFunctions()
 
-	gencoderCmd.AddCommand(genCmd)
+	gencoderCmd.AddCommand(NewGenCmd())
 }
 
 func registerHelperFunctions() {
