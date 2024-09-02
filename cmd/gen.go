@@ -22,7 +22,7 @@ var (
 
 func NewGenCmd() *cobra.Command {
 
-	c := cobra.Command{
+	c := &cobra.Command{
 		Use:   "gen",
 		Short: "Generate code from database configuration",
 		Run:   run,
@@ -30,7 +30,7 @@ func NewGenCmd() *cobra.Command {
 
 	c.Flags().StringVarP(config, "config", "f", "gencoder.yaml", "config file to use")
 
-	return &c
+	return c
 }
 
 func run(_ *cobra.Command, _ []string) {

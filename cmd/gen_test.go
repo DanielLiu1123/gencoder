@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func Test_buildBlocks(t *testing.T) {
+func Test_parseBlocks(t *testing.T) {
 	type args struct {
 		cfg     *info.Config
 		content string
@@ -47,8 +47,8 @@ out of block
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := buildBlocks(tt.args.cfg, tt.args.content); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("buildBlocks() = %v, want %v", got, tt.want)
+			if got := parseBlocks(tt.args.cfg, tt.args.content); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("parseBlocks() = %v, want %v", got, tt.want)
 			}
 		})
 	}
