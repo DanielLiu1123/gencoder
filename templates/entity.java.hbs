@@ -1,5 +1,5 @@
 /**
- * gencoder generated file: src/main/{{replaceAll properties.package '.' '/'}}/{{table.name}}.java
+ * gencoder generated file: src/main/{{replaceAll properties.package '.' '/'}}/{{pascalCase table.name}}.java
  */
 
 package {{properties.package}};
@@ -14,14 +14,13 @@ package {{properties.package}};
 {{/each}}
  * gencoder block end: table info
  */
-public record {{table.name}} (
+public record {{pascalCase table.name}} (
     // gencoder block start: columns
 {{#each table.columns}}
-    {{#if (eq ../table.name 'user')}}{{#if (eq name 'updated_at')}}// asdasddddddddddd{{/if}}{{/if}}
     /**
      * {{comment}}
      */
-    {{> 'type.partial.hbs' columnType=type}} {{name}}{{#unless @last}},{{/unless}}
+    {{> 'type.partial.hbs' columnType=type}} {{camelCase name}}{{#unless @last}},{{/unless}}
 {{/each}}
     // gencoder block end: columns
 ) {}
