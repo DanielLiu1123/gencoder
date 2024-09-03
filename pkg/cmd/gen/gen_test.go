@@ -1,4 +1,4 @@
-package cmd
+package gen
 
 import (
 	"github.com/DanielLiu1123/gencoder/info"

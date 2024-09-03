@@ -17,6 +17,7 @@ package {{properties.package}};
 public record {{table.name}} (
     // gencoder block start: columns
 {{#each table.columns}}
+    {{#if (eq ../table.name 'user')}}{{#if (eq name 'updated_at')}}// asdasddddddddddd{{/if}}{{/if}}
     /**
      * {{comment}}
      */

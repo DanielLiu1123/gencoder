@@ -1,4 +1,4 @@
-package cmd
+package gen
 
 import (
 	"bufio"
@@ -16,25 +16,29 @@ import (
 	"strings"
 )
 
-var (
-	config *string
-)
+type GenOptions struct {
+	config string
+}
 
-func NewGenCmd() *cobra.Command {
+func NewCmdGen() *cobra.Command {
+
+	opt := &GenOptions{}
 
 	c := &cobra.Command{
 		Use:   "gen",
 		Short: "Generate code from database configuration",
-		Run:   run,
+		Run: func(cmd *cobra.Command, args []string) {
+			run(cmd, args, opt)
+		},
 	}
 
-	c.Flags().StringVarP(config, "config", "f", "gencoder.yaml", "config file to use")
+	c.Flags().StringVarP(&opt.config, "config", "f", "gencoder.yaml", "config file to use")
 
 	return c
 }
 
-func run(_ *cobra.Command, _ []string) {
-	cfg, err := readConfig(*config)
+func run(_ *cobra.Command, _ []string, opt *GenOptions) {
+	cfg, err := readConfig(opt.config)
 	if err != nil {
 		log.Fatal(err)
 	}

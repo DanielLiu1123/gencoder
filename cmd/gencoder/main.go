@@ -1,7 +1,9 @@
 package main
 
 import (
-	"github.com/DanielLiu1123/gencoder/cmd"
+	"github.com/DanielLiu1123/gencoder/pkg/cmd/root"
+	"log"
+
 	// drivers
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
@@ -11,5 +13,8 @@ import (
 )
 
 func main() {
-	cmd.Execute()
+	err := root.NewCmdRoot().Execute()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
