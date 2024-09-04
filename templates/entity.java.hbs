@@ -20,7 +20,7 @@ public record {{pascalCase table.name}} (
     /**
      * {{comment}}
      */
-    {{> 'type.partial.hbs' columnType=type}} {{camelCase name}}{{#unless @last}},{{/unless}}
+    {{> 'java_type.partial.hbs' columnType=type}} {{camelCase name}}{{#unless @last}},{{/unless}}
 {{/each}}
     // gencoder block end: columns
 ) {}

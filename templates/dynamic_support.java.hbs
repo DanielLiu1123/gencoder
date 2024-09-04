@@ -1,17 +1,22 @@
 /**
-* gencoder generated file: src/main/{{replaceAll properties.package '.' '/'}}/{{pascalCase table.name}}DynamicSqlSupport.java
-*/
+ * gencoder generated file: src/main/{{replaceAll properties.package '.' '/'}}/{{pascalCase table.name}}DynamicSqlSupport.java
+ */
 
 // gencoder block start: DynamicSqlSupport
 public final class {{pascalCase table.name}}DynamicSqlSupport {
+
     public static final {{pascalCase table.name}} {{camelCase table.name}} = new {{pascalCase table.name}}();
+
 {{#each table.columns}}
-    public static final org.mybatis.dynamic.sql.SqlColumn<{{> 'type.partial.hbs' columnType=type}}> {{camelCase name}} = {{camelCase table.name}}.{{camelCase name}};
+    public static final org.mybatis.dynamic.sql.SqlColumn<{{> 'java_type.partial.hbs' columnType=type}}> {{camelCase name}} = {{camelCase table.name}}.{{camelCase name}};
 {{/each}}
+
     public static final class {{pascalCase table.name}} extends org.mybatis.dynamic.sql.AliasableSqlTable<{{pascalCase table.name}}> {
+
 {{#each table.columns}}
-        public final org.mybatis.dynamic.sql.SqlColumn<{{> 'type.partial.hbs' columnType=type}}> {{camelCase name}} = column("{{name}}", java.sql.JDBCType.INTEGER);
+        public final org.mybatis.dynamic.sql.SqlColumn<{{> 'java_type.partial.hbs' columnType=type}}> {{camelCase name}} = column("{{name}}", {{> 'jdbc_type.partial.hbs' columnType=type}});
 {{/each}}
+
         public {{pascalCase table.name}}() {
             super("{{table.name}}", {{pascalCase table.name}}::new);
         }
