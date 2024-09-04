@@ -5,6 +5,7 @@ import (
 	"github.com/DanielLiu1123/gencoder/pkg/util"
 	"github.com/aymerick/raymond"
 	"github.com/spf13/cobra"
+	"log"
 	"regexp"
 	"strings"
 )
@@ -30,10 +31,10 @@ func registerHelperFunctions() {
 		return strings.ReplaceAll(target, old, new)
 	})
 
-	raymond.RegisterHelper("match", func(target, pattern string) bool {
+	raymond.RegisterHelper("match", func(pattern, target string) bool {
 		match, err := regexp.MatchString(pattern, target)
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 		return match
 	})
@@ -65,4 +66,18 @@ func registerHelperFunctions() {
 		return strings.ToUpper(string(s[0])) + s[1:]
 	})
 
+	raymond.RegisterHelper("lowerFirst", func(s string) string {
+		if len(s) == 0 {
+			return ""
+		}
+		return strings.ToLower(string(s[0])) + s[1:]
+	})
+
+	raymond.RegisterHelper("uppercase", func(s string) string {
+		return strings.ToUpper(s)
+	})
+
+	raymond.RegisterHelper("lowercase", func(s string) string {
+		return strings.ToLower(s)
+	})
 }
