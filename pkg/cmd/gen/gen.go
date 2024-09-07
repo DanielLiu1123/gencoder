@@ -67,9 +67,7 @@ func run(_ *cobra.Command, _ []string, opt *GenOptions) {
 	var renderContexts []*model.RenderContext
 	for _, dbCfg := range cfg.Databases {
 		contexts := collectRenderContexts(dbCfg)
-		for _, e := range contexts {
-			renderContexts = append(renderContexts, e)
-		}
+		renderContexts = append(renderContexts, contexts...)
 	}
 
 	if opt.contextsOnly {
