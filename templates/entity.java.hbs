@@ -5,22 +5,20 @@
 package {{properties.package}};
 
 /**
- * gencoder block start: table info
+ * gencoder block start: table
  * <p> table: {{table.name}}
  * <p> comment: {{table.comment}}
  * <p> indexes:
 {{#each table.indexes}}
  *   <p> {{name}}: ({{#each columns}}{{name}}{{#unless @last}}, {{/unless}}{{/each}})
 {{/each}}
- * gencoder block end: table info
  */
 public record {{pascalCase table.name}} (
-    // gencoder block start: columns
 {{#each table.columns}}
     /**
      * {{comment}}
      */
     {{> 'java_type.partial.hbs' columnType=type}} {{camelCase name}}{{#unless @last}},{{/unless}}
 {{/each}}
-    // gencoder block end: columns
+    // gencoder block end: table
 ) {}

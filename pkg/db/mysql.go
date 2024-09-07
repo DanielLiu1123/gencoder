@@ -1,14 +1,15 @@
-package info
+package db
 
 import (
 	"context"
 	"database/sql"
+	"github.com/DanielLiu1123/gencoder/pkg/model"
 	"slices"
 	"sort"
 )
 
 // GenMySQLTable generates a MySQL table and fills the Table structure.
-func GenMySQLTable(ctx context.Context, db *sql.DB, schema, table string, ignoreColumns []string) (*Table, error) {
+func GenMySQLTable(ctx context.Context, db *sql.DB, schema, table string, ignoreColumns []string) (*model.Table, error) {
 	// Table info
 	const tableSql = `
 select table_schema,
@@ -19,7 +20,7 @@ where table_schema = ?
   and table_name = ?;
 `
 	tableRow := db.QueryRowContext(ctx, tableSql, schema, table)
-	var t Table
+	var t model.Table
 	if err := tableRow.Scan(&t.Schema, &t.Name, &t.Comment); err != nil {
 		return nil, err
 	}
@@ -44,9 +45,9 @@ order by ordinal_position;
 	}
 	defer columnRows.Close()
 
-	var columns []*Column
+	var columns []*model.Column
 	for columnRows.Next() {
-		var col Column
+		var col model.Column
 		if err := columnRows.Scan(&col.Ordinal, &col.Name, &col.Type, &col.IsNullable, &col.DefaultValue, &col.IsPrimaryKey, &col.Comment); err != nil {
 			return nil, err
 		}
@@ -77,7 +78,7 @@ order by index_name, seq_in_index;
 	}
 	defer indexRows.Close()
 
-	indexMap := make(map[string]*Index)
+	indexMap := make(map[string]*model.Index)
 	for indexRows.Next() {
 		var indexName, columnName string
 		var isUnique, isPrimary bool
@@ -88,21 +89,21 @@ order by index_name, seq_in_index;
 		}
 
 		if _, exists := indexMap[indexName]; !exists {
-			indexMap[indexName] = &Index{
+			indexMap[indexName] = &model.Index{
 				Name:      indexName,
 				IsUnique:  isUnique,
 				IsPrimary: isPrimary,
-				Columns:   []*IndexColumn{},
+				Columns:   []*model.IndexColumn{},
 			}
 		}
 
-		indexMap[indexName].Columns = append(indexMap[indexName].Columns, &IndexColumn{
+		indexMap[indexName].Columns = append(indexMap[indexName].Columns, &model.IndexColumn{
 			Ordinal: ordinal,
 			Name:    columnName,
 		})
 	}
 
-	var indexes []*Index
+	var indexes []*model.Index
 	for _, index := range indexMap {
 		indexes = append(indexes, index)
 	}

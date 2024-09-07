@@ -1,6 +1,6 @@
-{{#if (match 'varchar.*|text' columnType)}}String{{/if ~}}
-{{#if (match 'bigint|int64' columnType)}}Long{{/if ~}}
-{{#if (match '.*int.*' columnType)}}Integer{{/if ~}}
-{{#if (match 'timestamp' columnType)}}java.util.Date{{/if ~}}
-{{#if (match 'enum.*' columnType)}}String{{/if ~}}
-{{#if (match 'decimal.*' columnType)}}java.math.BigDecimal{{/if ~}}
+{{~#if (match 'varchar.*|text' columnType)}}String{{/if ~}}
+{{~#if (match 'bigint|int64' columnType)}}Long{{/if ~}}
+{{~#if (match '.*int.*' columnType)}}Integer{{/if ~}}
+{{~#if (match 'timestamp' columnType)}}java.util.Date{{/if ~}}
+{{~#if (match 'enum.*' columnType)}}String{{/if ~}}
+{{~#if (match 'decimal.*' columnType)}}java.math.BigDecimal{{/if ~}}

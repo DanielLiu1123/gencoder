@@ -1,14 +1,14 @@
 package gen
 
 import (
-	"github.com/DanielLiu1123/gencoder/info"
+	"github.com/DanielLiu1123/gencoder/pkg/model"
 	"reflect"
 	"testing"
 )
 
 func Test_parseBlocks(t *testing.T) {
 	type args struct {
-		cfg     *info.Config
+		cfg     *model.Config
 		content string
 	}
 	tests := []struct {
@@ -19,8 +19,8 @@ func Test_parseBlocks(t *testing.T) {
 		{
 			name: "Test buildBlocks",
 			args: args{
-				cfg: &info.Config{
-					BlockMarker: info.BlockMarker{
+				cfg: &model.Config{
+					BlockMarker: model.BlockMarker{
 						Start: "gencoder block start:",
 						End:   "gencoder block end:",
 					},

@@ -1,9 +1,9 @@
-package info
+package model
 
 type Config struct {
-	TemplatesDir string            `yaml:"templates-dir"`
-	OutputMarker string            `yaml:"output-marker"`
-	BlockMarker  BlockMarker       `yaml:"block-marker"`
+	TemplatesDir string            `yaml:"templatesDir"`
+	OutputMarker string            `yaml:"outputMarker"`
+	BlockMarker  BlockMarker       `yaml:"blockMarker"`
 	Databases    []*DatabaseConfig `yaml:"databases"`
 }
 
@@ -19,7 +19,7 @@ type TableConfig struct {
 	Schema        string            `yaml:"schema"`
 	Name          string            `yaml:"name"`
 	Properties    map[string]string `yaml:"properties"`
-	IgnoreColumns []string          `yaml:"ignore-columns"`
+	IgnoreColumns []string          `yaml:"ignoreColumns"`
 }
 
 type BlockMarker struct {

@@ -1,6 +1,6 @@
 # TODO(Freeman): Delete it!
-templates-dir: templates
-block-marker:
+templatesDir: templates
+blockMarker:
   start: 'gencoder block start:'
   end: 'gencoder block end:'
 databases:
@@ -13,5 +13,5 @@ databases:
       - name: 'user'
         properties:
           package: example.order
-        ignore-columns:
+        ignoreColumns:
           - deleted_at

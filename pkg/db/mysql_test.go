@@ -1,4 +1,4 @@
-package info
+package db
 
 import (
 	"context"
@@ -57,7 +57,7 @@ func TestGenMySQLTable(t *testing.T) {
 	time.Sleep(10 * time.Second)
 
 	dsn := "root:root@tcp(127.0.0.1:3306)/testdb"
-	db, err := sql.Open("mysql", dsn)
+	dbconn, err := sql.Open("mysql", dsn)
 	if err != nil {
 		t.Fatalf("Failed to connect to the database: %s", err)
 	}
@@ -66,9 +66,9 @@ func TestGenMySQLTable(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Failed to close the database: %s", err)
 		}
-	}(db)
+	}(dbconn)
 
-	_, err = db.Exec(`CREATE TABLE testdb.user (
+	_, err = dbconn.Exec(`CREATE TABLE testdb.user (
         id INT AUTO_INCREMENT PRIMARY KEY,
         username VARCHAR(64) NOT NULL COMMENT 'Username, required',
         password VARCHAR(128) NOT NULL,
@@ -91,7 +91,7 @@ func TestGenMySQLTable(t *testing.T) {
 	schema := "testdb"
 	table := "user"
 
-	tb, err := GenMySQLTable(context.Background(), db, schema, table, []string{"deleted_at"})
+	tb, err := GenMySQLTable(context.Background(), dbconn, schema, table, []string{"deleted_at"})
 	if err != nil {
 		t.Fatalf("Failed to generate MySQL table: %s", err)
 	}

@@ -4,7 +4,10 @@ import (
 	"bufio"
 	"context"
 	"database/sql"
-	"github.com/DanielLiu1123/gencoder/info"
+	"fmt"
+	"github.com/DanielLiu1123/gencoder/pkg/db"
+	"github.com/DanielLiu1123/gencoder/pkg/model"
+	"github.com/DanielLiu1123/gencoder/pkg/util"
 	"github.com/aymerick/raymond"
 	"github.com/spf13/cobra"
 	"github.com/xo/dburl"
@@ -17,7 +20,9 @@ import (
 )
 
 type GenOptions struct {
-	config string
+	config       string
+	contextsOnly bool // Only show render contexts
+	output       string
 }
 
 func NewCmdGen() *cobra.Command {
@@ -32,7 +37,16 @@ func NewCmdGen() *cobra.Command {
 		},
 	}
 
-	c.Flags().StringVarP(&opt.config, "config", "f", "gencoder.yaml", "config file to use")
+	c.Flags().StringVarP(&opt.config, "config", "f", "gencoder.yaml", "Config file to use")
+	c.Flags().BoolVarP(&opt.contextsOnly, "contexts-only", "c", false, "Only show render contexts")
+	c.Flags().StringVarP(&opt.output, "output", "o", "json", "Output format, only used with --contexts-only. One of: json, yaml")
+
+	err := c.RegisterFlagCompletionFunc("output", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{"json", "yaml"}, cobra.ShellCompDirectiveDefault
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	return c
 }
@@ -50,8 +64,38 @@ func run(_ *cobra.Command, _ []string, opt *GenOptions) {
 
 	registerPartialTemplates(templates)
 
+	var renderContexts []*model.RenderContext
 	for _, dbCfg := range cfg.Databases {
-		processDatabase(cfg, dbCfg, templates)
+		contexts := collectRenderContexts(dbCfg)
+		for _, e := range contexts {
+			renderContexts = append(renderContexts, e)
+		}
+	}
+
+	if opt.contextsOnly {
+		switch opt.output {
+		case "json":
+			jsonV, err := util.ToJson(renderContexts)
+			if err != nil {
+				log.Fatal(err)
+			}
+			fmt.Println(jsonV)
+		case "yaml":
+			yamlV, err := util.ToYaml(renderContexts)
+			if err != nil {
+				log.Fatal(err)
+			}
+			fmt.Println(yamlV)
+		default:
+			log.Fatalf("Invalid output format: %s", opt.output)
+		}
+		return
+	}
+
+	for _, ctx := range renderContexts {
+		for _, tpl := range templates {
+			handleTemplate(cfg, tpl, ctx)
+		}
 	}
 }
 
@@ -63,8 +107,9 @@ func registerPartialTemplates(templates []*tpl) {
 	}
 }
 
-func processDatabase(cfg *info.Config, dbCfg *info.DatabaseConfig, templates []*tpl) {
-	db, err := dburl.Open(dbCfg.Dsn)
+func collectRenderContexts(dbCfg *model.DatabaseConfig) []*model.RenderContext {
+
+	dbconn, err := dburl.Open(dbCfg.Dsn)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -73,31 +118,29 @@ func processDatabase(cfg *info.Config, dbCfg *info.DatabaseConfig, templates []*
 		if err != nil {
 			log.Fatal(err)
 		}
-	}(db)
+	}(dbconn)
 
+	var contexts []*model.RenderContext
 	for _, tbCfg := range dbCfg.Tables {
 		schema := tbCfg.Schema
 		if schema == "" {
 			schema = dbCfg.Schema
 		}
 
-		table, err := info.GenMySQLTable(context.Background(), db, schema, tbCfg.Name, tbCfg.IgnoreColumns)
+		table, err := db.GenMySQLTable(context.Background(), dbconn, schema, tbCfg.Name, tbCfg.IgnoreColumns)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		ctx := createRenderContext(dbCfg, tbCfg, table)
 
-		for _, tpl := range templates {
-			if tpl.GeneratedFileName == "" {
-				continue
-			}
-			handleTemplate(cfg, tpl, ctx)
-		}
+		contexts = append(contexts, ctx)
 	}
+
+	return contexts
 }
 
-func createRenderContext(dbCfg *info.DatabaseConfig, tbCfg *info.TableConfig, table *info.Table) *renderCtx {
+func createRenderContext(dbCfg *model.DatabaseConfig, tbCfg *model.TableConfig, table *model.Table) *model.RenderContext {
 	properties := make(map[string]string)
 	for k, v := range dbCfg.Properties {
 		properties[k] = v
@@ -106,13 +149,19 @@ func createRenderContext(dbCfg *info.DatabaseConfig, tbCfg *info.TableConfig, ta
 		properties[k] = v
 	}
 
-	return &renderCtx{
+	return &model.RenderContext{
 		Table:      table,
 		Properties: properties,
 	}
 }
 
-func handleTemplate(cfg *info.Config, tpl *tpl, ctx *renderCtx) {
+func handleTemplate(cfg *model.Config, tpl *tpl, ctx *model.RenderContext) {
+
+	// Skip partial templates
+	if tpl.GeneratedFileName == "" {
+		return
+	}
+
 	newContent, err := tpl.Template.Exec(ctx)
 	if err != nil {
 		log.Fatal(err)
@@ -152,7 +201,7 @@ func writeFile(fileName, content string) {
 	}
 }
 
-func getFileName(filenameTpl string, ctx *renderCtx) string {
+func getFileName(filenameTpl string, ctx *model.RenderContext) string {
 	t, err := raymond.Parse(filenameTpl)
 	if err != nil {
 		log.Fatal(err)
@@ -166,18 +215,18 @@ func getFileName(filenameTpl string, ctx *renderCtx) string {
 	return fileName
 }
 
-func readConfig(configPath string) (*info.Config, error) {
+func readConfig(configPath string) (*model.Config, error) {
 	file, err := os.ReadFile(configPath)
 	if err != nil {
 		return nil, err
 	}
 
-	var cfg info.Config
+	var cfg model.Config
 	err = yaml.Unmarshal(file, &cfg)
 	return &cfg, err
 }
 
-func loadTemplates(cfg *info.Config) ([]*tpl, error) {
+func loadTemplates(cfg *model.Config) ([]*tpl, error) {
 	var templates []*tpl
 
 	err := filepath.WalkDir(cfg.GetTemplatesDir(), func(path string, d fs.DirEntry, err error) error {
@@ -213,7 +262,7 @@ func loadTemplates(cfg *info.Config) ([]*tpl, error) {
 	return templates, err
 }
 
-func getFileNameTemplate(content string, cfg *info.Config) string {
+func getFileNameTemplate(content string, cfg *model.Config) string {
 	scanner := bufio.NewScanner(strings.NewReader(content))
 
 	for scanner.Scan() {
@@ -231,7 +280,7 @@ func readFile(filename string) (string, error) {
 	return string(fileData), err
 }
 
-func parseBlocks(cfg *info.Config, content string) map[string]string {
+func parseBlocks(cfg *model.Config, content string) map[string]string {
 	blocks := make(map[string]string)
 	lines := strings.Split(content, "\n")
 	var currentBlockID string
@@ -263,7 +312,7 @@ func parseBlocks(cfg *info.Config, content string) map[string]string {
 	return blocks
 }
 
-func replaceBlocks(cfg *info.Config, oldContent, newContent string) string {
+func replaceBlocks(cfg *model.Config, oldContent, newContent string) string {
 	newBlocks := parseBlocks(cfg, newContent)
 	var realContent strings.Builder
 
@@ -316,9 +365,4 @@ type tpl struct {
 	GeneratedFileName string            // generated file name, if empty, it's a partial template
 	Source            string            // template source code
 	Template          *raymond.Template // compiled template
-}
-
-type renderCtx struct {
-	Table      *info.Table
-	Properties map[string]string
 }
