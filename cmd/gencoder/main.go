@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/DanielLiu1123/gencoder/pkg/cmd/root"
+	"github.com/DanielLiu1123/gencoder/pkg/cmd"
 	"log"
 
 	// drivers
@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	err := root.NewCmdRoot().Execute()
+	err := cmd.NewCmdRoot().Execute()
 	if err != nil {
 		log.Fatal(err)
 	}

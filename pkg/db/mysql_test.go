@@ -29,7 +29,7 @@ func startMySQLContainer() (string, error) {
 }
 
 // Helper function to stop and remove the MySQL container
-func stopAndRemoveMySQLContainer(containerID string) {
+func stopContainer(containerID string) {
 	err := exec.Command("docker", "stop", containerID).Run()
 	if err != nil {
 		panic(err)
@@ -51,13 +51,13 @@ func TestGenMySQLTable(t *testing.T) {
 		t.Fatalf("Failed to start MySQL container: %s", err)
 	}
 
-	defer stopAndRemoveMySQLContainer(containerID)
+	defer stopContainer(containerID)
 
 	// Wait for MySQL to initialize
 	time.Sleep(10 * time.Second)
 
 	dsn := "root:root@tcp(127.0.0.1:3306)/testdb"
-	dbconn, err := sql.Open("mysql", dsn)
+	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		t.Fatalf("Failed to connect to the database: %s", err)
 	}
@@ -66,9 +66,9 @@ func TestGenMySQLTable(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Failed to close the database: %s", err)
 		}
-	}(dbconn)
+	}(db)
 
-	_, err = dbconn.Exec(`CREATE TABLE testdb.user (
+	_, err = db.Exec(`CREATE TABLE testdb.user (
         id INT AUTO_INCREMENT PRIMARY KEY,
         username VARCHAR(64) NOT NULL COMMENT 'Username, required',
         password VARCHAR(128) NOT NULL,
@@ -91,7 +91,7 @@ func TestGenMySQLTable(t *testing.T) {
 	schema := "testdb"
 	table := "user"
 
-	tb, err := GenMySQLTable(context.Background(), dbconn, schema, table, []string{"deleted_at"})
+	tb, err := GenMySQLTable(context.Background(), db, schema, table, []string{"deleted_at"})
 	if err != nil {
 		t.Fatalf("Failed to generate MySQL table: %s", err)
 	}
