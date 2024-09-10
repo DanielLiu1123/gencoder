@@ -36,21 +36,21 @@ func (c Config) GetTemplatesDir() string {
 
 func (c Config) GetOutputMarker() string {
 	if c.OutputMarker == "" {
-		return "gencoder generated file:"
+		return "@gencoder.generated:"
 	}
 	return c.OutputMarker
 }
 
 func (e BlockMarker) GetStart() string {
 	if e.Start == "" {
-		return "gencoder block start:"
+		return "@gencoder.block.start:"
 	}
 	return e.Start
 }
 
 func (e BlockMarker) GetEnd() string {
 	if e.End == "" {
-		return "gencoder block end:"
+		return "@gencoder.block.end:"
 	}
 	return e.End
 }

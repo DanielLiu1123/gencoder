@@ -1,11 +1,11 @@
 /**
- * gencoder generated file: src/main/{{replaceAll properties.package '.' '/'}}/{{pascalCase table.name}}.java
+ * @gencoder.generated: src/main/{{replaceAll properties.package '.' '/'}}/{{pascalCase table.name}}.java
  */
 
 package {{properties.package}};
 
 /**
- * gencoder block start: table
+ * @gencoder.block.start: table
  * <p> table: {{table.name}}
  * <p> comment: {{table.comment}}
  * <p> indexes:
@@ -20,5 +20,5 @@ public record {{pascalCase table.name}} (
      */
     {{> 'java_type.partial.hbs' columnType=type}} {{camelCase name}}{{#unless @last}},{{/unless}}
 {{/each}}
-    // gencoder block end: table
+    // @gencoder.block.end: table
 ) {}

@@ -1,8 +1,8 @@
 # TODO(Freeman): Delete it!
 templatesDir: templates
 blockMarker:
-  start: 'gencoder block start:'
-  end: 'gencoder block end:'
+  start: '@gencoder.block.start:'
+  end: '@gencoder.block.end:'
 databases:
   - name: mysql
     dsn: 'mysql://root:root@localhost:3306/testdb'

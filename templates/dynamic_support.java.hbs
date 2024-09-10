@@ -1,5 +1,5 @@
 /**
- * gencoder generated file: src/main/{{replaceAll properties.package '.' '/'}}/{{pascalCase table.name}}DynamicSqlSupport.java
+ * @gencoder.generated: src/main/{{replaceAll properties.package '.' '/'}}/{{pascalCase table.name}}DynamicSqlSupport.java
  */
 
 import org.mybatis.dynamic.sql.SqlColumn;
@@ -7,7 +7,7 @@ import org.mybatis.dynamic.sql.AliasableSqlTable;
 
 public final class {{pascalCase table.name}}DynamicSqlSupport {
 
-    // gencoder block start: DynamicSqlSupport
+    // @gencoder.block.start: DynamicSqlSupport
     public static final {{pascalCase table.name}} {{camelCase table.name}} = new {{pascalCase table.name}}();
 
 {{#each table.columns}}
@@ -24,5 +24,5 @@ public final class {{pascalCase table.name}}DynamicSqlSupport {
             super("{{table.name}}", {{pascalCase table.name}}::new);
         }
     }
-    // gencoder block end: DynamicSqlSupport
+    // @gencoder.block.end: DynamicSqlSupport
 }

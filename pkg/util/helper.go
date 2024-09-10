@@ -117,8 +117,17 @@ func collectRenderContextsForDBConfig(dbCfg *model.DatabaseConfig) []*model.Rend
 
 		switch driver {
 		case "mysql":
+			if schema == "" {
+				arr := strings.Split(u.Path, "/")
+				if len(arr) > 1 {
+					schema = arr[1]
+				}
+			}
 			table, err = db.GenMySQLTable(context.Background(), conn, schema, tbCfg.Name, tbCfg.IgnoreColumns)
 		case "postgres":
+			if schema == "" {
+				schema = "public"
+			}
 			table, err = db.GenPostgresTable(context.Background(), conn, schema, tbCfg.Name, tbCfg.IgnoreColumns)
 		default:
 			log.Fatalf("unsupported driver: %s", driver)

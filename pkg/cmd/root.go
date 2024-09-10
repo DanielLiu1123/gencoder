@@ -87,4 +87,17 @@ func registerHelperFunctions() {
 	raymond.RegisterHelper("lowercase", func(s string) string {
 		return strings.ToLower(s)
 	})
+
+	raymond.RegisterHelper("trim", func(s string) string {
+		return strings.TrimSpace(s)
+	})
+
+	raymond.RegisterHelper("removePrefix", func(s, prefix string) string {
+		return strings.TrimPrefix(s, prefix)
+	})
+
+	raymond.RegisterHelper("removeSuffix", func(s, suffix string) string {
+		return strings.TrimSuffix(s, suffix)
+	})
+
 }
