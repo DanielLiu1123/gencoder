@@ -183,7 +183,7 @@ func parseBlocks(cfg *model.Config, content string) map[string]string {
 				blocks[currentBlockID] = strings.TrimRight(currentBlock.String(), "\n")
 				currentBlock.Reset()
 			}
-			currentBlockID = strings.SplitN(trimmed, cfg.BlockMarker.GetStart(), 2)[1]
+			currentBlockID = strings.TrimSpace(strings.SplitN(trimmed, cfg.BlockMarker.GetStart(), 2)[1])
 			currentBlock.WriteString(line + "\n")
 		} else if strings.Contains(trimmed, cfg.BlockMarker.GetEnd()) && currentBlockID != "" {
 			currentBlock.WriteString(line + "\n")

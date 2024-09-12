@@ -40,8 +40,14 @@ out of block
 `,
 			},
 			want: map[string]string{
-				"block1": "block1\nblock1\n",
-				"block2": "block2\nblock2\n",
+				"block1": `gencoder block start: block1
+block1
+block1
+gencoder block end: block1`,
+				"block2": `gencoder block start: block2
+block2
+block2
+gencoder block end: block2`,
 			},
 		},
 	}
