@@ -1,6 +1,6 @@
 module github.com/DanielLiu1123/gencoder
 
-go 1.23.0
+go 1.23.1
 
 require (
 	github.com/aymerick/raymond v2.0.2+incompatible
