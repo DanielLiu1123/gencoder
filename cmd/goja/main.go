@@ -1,0 +1,22 @@
+package main
+
+import (
+	"fmt"
+	"github.com/DanielLiu1123/gencoder/pkg/handlebars"
+
+	// drivers
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
+	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/microsoft/go-mssqldb"
+	_ "github.com/sijms/go-ora/v2"
+)
+
+func main() {
+
+	handlebars.RegisterPartial("name", "{{name}}!!!!")
+	tpl := handlebars.Compile(`Hello, {{> name}}!`)
+	str := handlebars.Render(tpl, map[string]interface{}{"name": "Daniel"})
+
+	fmt.Println(str)
+}

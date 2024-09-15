@@ -5,8 +5,8 @@ import (
 	"context"
 	"database/sql"
 	"github.com/DanielLiu1123/gencoder/pkg/db"
+	"github.com/DanielLiu1123/gencoder/pkg/handlebars"
 	"github.com/DanielLiu1123/gencoder/pkg/model"
-	"github.com/mailgun/raymond/v2"
 	"github.com/xo/dburl"
 	"gopkg.in/yaml.v3"
 	"io/fs"
@@ -45,7 +45,7 @@ func LoadTemplates(cfg *model.Config) ([]*model.Tpl, error) {
 			return err
 		}
 
-		template, err := raymond.Parse(string(b))
+		template := handlebars.Compile(string(b))
 		if err != nil {
 			return err
 		}

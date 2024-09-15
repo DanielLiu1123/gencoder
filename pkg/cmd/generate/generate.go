@@ -1,9 +1,9 @@
 package generate
 
 import (
+	"github.com/DanielLiu1123/gencoder/pkg/handlebars"
 	"github.com/DanielLiu1123/gencoder/pkg/model"
 	"github.com/DanielLiu1123/gencoder/pkg/util"
-	"github.com/mailgun/raymond/v2"
 	"github.com/spf13/cobra"
 	"log"
 	"os"
@@ -58,7 +58,7 @@ func run(_ *cobra.Command, _ []string, opt *GenerateOptions, _ *model.GlobalOpti
 func registerPartialTemplates(templates []*model.Tpl) {
 	for _, t := range templates {
 		if t.GeneratedFileName == "" {
-			raymond.RegisterPartial(t.TemplateName, t.Source)
+			handlebars.RegisterPartial(t.TemplateName, t.Source)
 		}
 	}
 }
@@ -70,12 +70,23 @@ func generate(cfg *model.Config, tpl *model.Tpl, ctx *model.RenderContext) {
 		return
 	}
 
-	newContent, err := tpl.Template.Exec(ctx)
+	// converter ctx to map[string]interface{}
+
+	var context map[string]interface{}
+
+	json, err := util.ToJson(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fileName := getFileName(tpl.GeneratedFileName, ctx)
+	err = util.FromJson(json, &context)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	newContent := handlebars.Render(tpl.Template, context)
+
+	fileName := getFileName(tpl.GeneratedFileName, context)
 
 	if _, err := os.Stat(fileName); err == nil {
 
@@ -107,18 +118,9 @@ func writeFile(fileName, content string) {
 	}
 }
 
-func getFileName(filenameTpl string, ctx *model.RenderContext) string {
-	t, err := raymond.Parse(filenameTpl)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fileName, err := t.Exec(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return fileName
+func getFileName(filenameTpl string, ctx map[string]interface{}) string {
+	tpl := handlebars.Compile(filenameTpl)
+	return handlebars.Render(tpl, ctx)
 }
 
 // Thanks to ChatGPT :)

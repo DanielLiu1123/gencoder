@@ -1,6 +1,8 @@
-{{~#if (match 'varchar.*|text' columnType)}}java.sql.JDBCType.VARCHAR{{/if ~}}
-{{~#if (match 'bigint|int64' columnType)}}java.sql.JDBCType.BIGINT{{/if ~}}
-{{~#if (match '.*int.*' columnType)}}java.sql.JDBCType.INTEGER{{/if ~}}
-{{~#if (match 'timestamp' columnType)}}java.sql.JDBCType.TIMESTAMP{{/if ~}}
-{{~#if (match 'enum.*' columnType)}}java.sql.JDBCType.VARCHAR{{/if ~}}
-{{~#if (match 'decimal.*' columnType)}}java.sql.JDBCType.DECIMAL{{/if ~}}
+{{~#if (match 'varchar.*|text' columnType)}}java.sql.JDBCType.VARCHAR
+{{~else if (match 'bigint|int64' columnType)}}java.sql.JDBCType.BIGINT
+{{~else if (match '.*int.*' columnType)}}java.sql.JDBCType.INTEGER
+{{~else if (match 'timestamp' columnType)}}java.sql.JDBCType.TIMESTAMP
+{{~else if (match 'enum.*' columnType)}}java.sql.JDBCType.VARCHAR
+{{~else if (match 'decimal.*' columnType)}}java.sql.JDBCType.DECIMAL
+{{~else}}java.sql.JDBCType.VARCHAR
+{{~/if}}

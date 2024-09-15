@@ -1,5 +1,5 @@
 /**
- * @gencoder.generated: src/main/{{replaceAll properties.package '.' '/'}}/{{pascalCase table.name}}DynamicSqlSupport.java
+ * @gencoder.generated: src/main/{{replaceAll properties.package '\.' '/'}}/{{pascalCase table.name}}DynamicSqlSupport.java
  */
 
 import org.mybatis.dynamic.sql.SqlColumn;
@@ -11,7 +11,7 @@ public final class {{pascalCase table.name}}DynamicSqlSupport {
     public static final {{pascalCase table.name}} {{camelCase table.name}} = new {{pascalCase table.name}}();
 
 {{#each table.columns}}
-    public static final SqlColumn<{{> 'java_type.partial.hbs' columnType=type}}> {{camelCase name}} = {{camelCase table.name}}.{{camelCase name}};
+    public static final SqlColumn<{{> 'java_type.partial.hbs' columnType=type}}> {{camelCase name}} = {{camelCase ../table.name}}.{{camelCase name}};
 {{/each}}
 
     public static final class {{pascalCase table.name}} extends AliasableSqlTable<{{pascalCase table.name}}> {

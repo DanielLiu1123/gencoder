@@ -3,13 +3,10 @@ package cmd
 import (
 	"github.com/DanielLiu1123/gencoder/pkg/cmd/generate"
 	"github.com/DanielLiu1123/gencoder/pkg/cmd/introspect"
+	"github.com/DanielLiu1123/gencoder/pkg/jsruntime"
 	"github.com/DanielLiu1123/gencoder/pkg/model"
-	"github.com/DanielLiu1123/gencoder/pkg/util"
-	"github.com/mailgun/raymond/v2"
 	"github.com/spf13/cobra"
 	"log"
-	"regexp"
-	"strings"
 )
 
 func NewCmdRoot() *cobra.Command {
@@ -34,70 +31,71 @@ func NewCmdRoot() *cobra.Command {
 
 func registerHelperFunctions() {
 
-	raymond.RegisterHelper("replaceAll", func(target, old, new string) string {
-		return strings.ReplaceAll(target, old, new)
-	})
+	vm := jsruntime.GetVM()
 
-	raymond.RegisterHelper("match", func(pattern, target string) bool {
-		match, err := regexp.MatchString(pattern, target)
-		if err != nil {
-			log.Fatal(err)
-		}
-		return match
-	})
+	_, err := vm.RunString(`
+		Handlebars.registerHelper('replaceAll', function(target, old, newV) {
+		    return target.replace(new RegExp(old, 'g'), newV);
+		});
 
-	raymond.RegisterHelper("eq", func(left, right string) bool {
-		return left == right
-	})
+		Handlebars.registerHelper('match', function(pattern, target) {
+			return new RegExp(pattern).test(target);
+		});
 
-	raymond.RegisterHelper("ne", func(left, right string) bool {
-		return left != right
-	})
-
-	raymond.RegisterHelper("snakeCase", func(s string) string {
-		return util.ToSnakeCase(s)
-	})
-
-	raymond.RegisterHelper("camelCase", func(s string) string {
-		return util.ToCamelCase(s)
-	})
-
-	raymond.RegisterHelper("pascalCase", func(s string) string {
-		return util.ToPascalCase(s)
-	})
-
-	raymond.RegisterHelper("upperFirst", func(s string) string {
-		if len(s) == 0 {
-			return ""
-		}
-		return strings.ToUpper(string(s[0])) + s[1:]
-	})
-
-	raymond.RegisterHelper("lowerFirst", func(s string) string {
-		if len(s) == 0 {
-			return ""
-		}
-		return strings.ToLower(string(s[0])) + s[1:]
-	})
-
-	raymond.RegisterHelper("uppercase", func(s string) string {
-		return strings.ToUpper(s)
-	})
-
-	raymond.RegisterHelper("lowercase", func(s string) string {
-		return strings.ToLower(s)
-	})
-
-	raymond.RegisterHelper("trim", func(s string) string {
-		return strings.TrimSpace(s)
-	})
-
-	raymond.RegisterHelper("removePrefix", func(s, prefix string) string {
-		return strings.TrimPrefix(s, prefix)
-	})
-
-	raymond.RegisterHelper("removeSuffix", func(s, suffix string) string {
-		return strings.TrimSuffix(s, suffix)
-	})
-
+		Handlebars.registerHelper('ne', function(left, right) {
+		    return left !== right;
+		});
+		
+		Handlebars.registerHelper('snakeCase', function(s) {
+		    return s.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
+		});
+		
+		Handlebars.registerHelper('camelCase', function(s) {
+			if (!s) {
+				return s;
+			}
+		    return s.replace(/([-_][a-z])/ig, function($1) {
+		        return $1.toUpperCase()
+		            .replace('-', '')
+		            .replace('_', '');
+		    });
+		});
+		
+		Handlebars.registerHelper('pascalCase', function(s) {
+		    return s.replace(/(\w)(\w*)/g, function($0, $1, $2) {
+		        return $1.toUpperCase() + $2.toLowerCase();
+		    });
+		});
+		
+		Handlebars.registerHelper('upperFirst', function(s) {
+		    return s.charAt(0).toUpperCase() + s.slice(1);
+		});
+		
+		Handlebars.registerHelper('lowerFirst', function(s) {
+		    return s.charAt(0).toLowerCase() + s.slice(1);
+		});
+		
+		Handlebars.registerHelper('uppercase', function(s) {
+		    return s.toUpperCase();
+		});
+		
+		Handlebars.registerHelper('lowercase', function(s) {
+		    return s.toLowerCase();
+		});
+		
+		Handlebars.registerHelper('trim', function(s) {
+		    return s.trim();
+		});
+		
+		Handlebars.registerHelper('removePrefix', function(s, prefix) {
+		    return s.startsWith(prefix) ? s.slice(prefix.length) : s;
+		});
+		
+		Handlebars.registerHelper('removeSuffix', function(s, suffix) {
+		    return s.endsWith(suffix) ? s.slice(0, -suffix.length) : s;
+		});
+	`)
+	if err != nil {
+		log.Fatalf("Error registering helper functions: %v", err)
+	}
 }

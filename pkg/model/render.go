@@ -1,6 +1,8 @@
 package model
 
-import "github.com/mailgun/raymond/v2"
+import (
+	"github.com/dop251/goja"
+)
 
 type RenderContext struct {
 	Table      *Table            `json:"table" yaml:"table"`
@@ -8,8 +10,8 @@ type RenderContext struct {
 }
 
 type Tpl struct {
-	TemplateName      string            // template file name
-	GeneratedFileName string            // generated file name, if empty, it's a partial template
-	Source            string            // template source code
-	Template          *raymond.Template // compiled template
+	TemplateName      string     // template file name
+	GeneratedFileName string     // generated file name, if empty, it's a partial template
+	Source            string     // template source code
+	Template          goja.Value // compiled template
 }

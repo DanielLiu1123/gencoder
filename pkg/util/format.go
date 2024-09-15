@@ -13,6 +13,10 @@ func ToJson(v any) (string, error) {
 	return string(b), nil
 }
 
+func FromJson(s string, v any) error {
+	return json.Unmarshal([]byte(s), v)
+}
+
 func ToYaml(v any) (string, error) {
 	out, err := yaml.Marshal(v)
 	if err != nil {
