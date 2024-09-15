@@ -3,7 +3,7 @@ package generate
 import (
 	"github.com/DanielLiu1123/gencoder/pkg/model"
 	"github.com/DanielLiu1123/gencoder/pkg/util"
-	"github.com/aymerick/raymond"
+	"github.com/mailgun/raymond/v2"
 	"github.com/spf13/cobra"
 	"log"
 	"os"

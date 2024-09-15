@@ -1,6 +1,6 @@
 package model
 
-import "github.com/aymerick/raymond"
+import "github.com/mailgun/raymond/v2"
 
 type RenderContext struct {
 	Table      *Table            `json:"table" yaml:"table"`

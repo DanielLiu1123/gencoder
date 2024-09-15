@@ -6,7 +6,7 @@ import (
 	"database/sql"
 	"github.com/DanielLiu1123/gencoder/pkg/db"
 	"github.com/DanielLiu1123/gencoder/pkg/model"
-	"github.com/aymerick/raymond"
+	"github.com/mailgun/raymond/v2"
 	"github.com/xo/dburl"
 	"gopkg.in/yaml.v3"
 	"io/fs"
