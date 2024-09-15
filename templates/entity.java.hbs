@@ -9,16 +9,16 @@ package {{properties.package}};
  * <p> table: {{table.name}}
  * <p> comment: {{table.comment}}
  * <p> indexes:
-{{#each table.indexes}}
+     {{#each table.indexes}}
  *   <p> {{name}}: ({{#each columns}}{{name}}{{#unless @last}}, {{/unless}}{{/each}})
-{{/each}}
+     {{/each}}
  */
 public record {{pascalCase table.name}} (
-{{#each table.columns}}
+    {{#each table.columns}}
     /**
      * {{comment}}
      */
     {{> 'java_type.partial.hbs' columnType=type}} {{camelCase name}}{{#unless @last}},{{/unless}}
-{{/each}}
+    {{/each}}
     // @gencoder.block.end: table
 ) {}

@@ -9,19 +9,24 @@ import (
 	"sync"
 )
 
-type IntrospectOptions struct {
+type introspectOptions struct {
 	config string
 	output string
 }
 
 func NewCmdIntrospect(globalOptions *model.GlobalOptions) *cobra.Command {
 
-	opt := &IntrospectOptions{}
+	opt := &introspectOptions{}
 
 	c := &cobra.Command{
 		Use:     "introspect",
 		Short:   "Print table information from database configuration",
-		Aliases: []string{"i", "intro"},
+		Aliases: []string{"intro", "i"},
+		PreRun: func(cmd *cobra.Command, args []string) {
+			if len(args) > 0 {
+				log.Fatalf("introspect command does not accept any arguments")
+			}
+		},
 		Run: func(cmd *cobra.Command, args []string) {
 			run(cmd, args, opt, globalOptions)
 		},
@@ -36,30 +41,18 @@ func NewCmdIntrospect(globalOptions *model.GlobalOptions) *cobra.Command {
 	return c
 }
 
-func run(_ *cobra.Command, _ []string, opt *IntrospectOptions, _ *model.GlobalOptions) {
-
-	cfg, err := util.ReadConfig(opt.config)
-	if err != nil {
-		log.Fatal(err)
-	}
+func run(_ *cobra.Command, _ []string, opt *introspectOptions, _ *model.GlobalOptions) {
 
 	renderContextsFunc := sync.OnceValue(func() []*model.RenderContext {
+		cfg := util.ReadConfig(opt.config)
 		return util.CollectRenderContexts(cfg.Databases...)
 	})
 
 	switch opt.output {
 	case "json":
-		jsonValue, err := util.ToJson(renderContextsFunc())
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Println(jsonValue)
+		fmt.Println(util.ToJson(renderContextsFunc()))
 	case "yaml", "yml":
-		yamlValue, err := util.ToYaml(renderContextsFunc())
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Println(yamlValue)
+		fmt.Println(util.ToYaml(renderContextsFunc()))
 	default:
 		log.Fatalf("unsupported output format: %s, must be one of (json, yaml)", opt.output)
 	}

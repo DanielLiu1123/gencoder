@@ -6,6 +6,7 @@ import (
 	"log"
 )
 
+// Compile compiles a Handlebars template
 func Compile(template string) goja.Value {
 	vm := jsruntime.GetVM()
 
@@ -22,6 +23,7 @@ func Compile(template string) goja.Value {
 	return compiledTemplate
 }
 
+// Render renders a Handlebars template with the given context
 func Render(template goja.Value, context map[string]interface{}) string {
 	vm := jsruntime.GetVM()
 
@@ -38,6 +40,7 @@ func Render(template goja.Value, context map[string]interface{}) string {
 	return result.String()
 }
 
+// RegisterPartial registers a Handlebars partial
 func RegisterPartial(name string, template string) {
 	vm := jsruntime.GetVM()
 

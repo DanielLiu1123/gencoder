@@ -10,15 +10,15 @@ public final class {{pascalCase table.name}}DynamicSqlSupport {
     // @gencoder.block.start: DynamicSqlSupport
     public static final {{pascalCase table.name}} {{camelCase table.name}} = new {{pascalCase table.name}}();
 
-{{#each table.columns}}
+    {{#each table.columns}}
     public static final SqlColumn<{{> 'java_type.partial.hbs' columnType=type}}> {{camelCase name}} = {{camelCase ../table.name}}.{{camelCase name}};
-{{/each}}
+    {{/each}}
 
     public static final class {{pascalCase table.name}} extends AliasableSqlTable<{{pascalCase table.name}}> {
 
-{{#each table.columns}}
-        public final SqlColumn<{{> 'java_type.partial.hbs' columnType=type}}> {{camelCase name}} = column("\"{{name}}\"", {{> 'jdbc_type.partial.hbs' columnType=type}});
-{{/each}}
+        {{#each table.columns}}
+        public final SqlColumn<{{> 'java_type.partial.hbs' columnType=type}}> {{camelCase name}} = column("`{{name}}`", {{> 'jdbc_type.partial.hbs' columnType=type}});
+        {{/each}}
 
         public {{pascalCase table.name}}() {
             super("{{table.name}}", {{pascalCase table.name}}::new);

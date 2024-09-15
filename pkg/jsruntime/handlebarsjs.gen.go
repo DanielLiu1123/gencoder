@@ -1,6 +1,6 @@
 package jsruntime
 
-// Generated code, DO NOT EDIT.
+// Generated file, DO NOT EDIT.
 
 const HandlebarsJS = `/**!
 

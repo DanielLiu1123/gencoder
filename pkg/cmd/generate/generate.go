@@ -11,18 +11,23 @@ import (
 	"strings"
 )
 
-type GenerateOptions struct {
+type generateOptions struct {
 	config string
 }
 
 func NewCmdGenerate(globalOptions *model.GlobalOptions) *cobra.Command {
 
-	opt := &GenerateOptions{}
+	opt := &generateOptions{}
 
 	c := &cobra.Command{
 		Use:     "generate",
 		Short:   "Generate code from database configuration",
-		Aliases: []string{"gen"},
+		Aliases: []string{"gen", "g"},
+		PreRun: func(cmd *cobra.Command, args []string) {
+			if len(args) > 0 {
+				log.Fatalf("generate command does not accept any arguments")
+			}
+		},
 		Run: func(cmd *cobra.Command, args []string) {
 			run(cmd, args, opt, globalOptions)
 		},
@@ -33,12 +38,9 @@ func NewCmdGenerate(globalOptions *model.GlobalOptions) *cobra.Command {
 	return c
 }
 
-func run(_ *cobra.Command, _ []string, opt *GenerateOptions, _ *model.GlobalOptions) {
+func run(_ *cobra.Command, _ []string, opt *generateOptions, _ *model.GlobalOptions) {
 
-	cfg, err := util.ReadConfig(opt.config)
-	if err != nil {
-		log.Fatal(err)
-	}
+	cfg := util.ReadConfig(opt.config)
 
 	templates, err := util.LoadTemplates(cfg)
 	if err != nil {
@@ -70,19 +72,7 @@ func generate(cfg *model.Config, tpl *model.Tpl, ctx *model.RenderContext) {
 		return
 	}
 
-	// converter ctx to map[string]interface{}
-
-	var context map[string]interface{}
-
-	json, err := util.ToJson(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = util.FromJson(json, &context)
-	if err != nil {
-		log.Fatal(err)
-	}
+	context := util.ToMap(ctx)
 
 	newContent := handlebars.Render(tpl.Template, context)
 
@@ -143,7 +133,7 @@ func replaceBlocks(cfg *model.Config, oldContent, newContent string) string {
 				}
 				currentBlock.Reset()
 			}
-			currentBlockID = strings.SplitN(trimmed, cfg.BlockMarker.GetStart(), 2)[1]
+			currentBlockID = strings.TrimSpace(trimmed[strings.Index(trimmed, cfg.BlockMarker.GetStart())+len(cfg.BlockMarker.GetStart()):])
 			currentBlock.WriteString(line + "\n")
 		} else if strings.Contains(trimmed, cfg.BlockMarker.GetEnd()) && currentBlockID != "" {
 			currentBlock.WriteString(line + "\n")

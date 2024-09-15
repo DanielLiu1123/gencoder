@@ -1,3 +1,9 @@
+package jsruntime
+
+// Generated file, DO NOT EDIT.
+
+const HelperJS = `// Add custom Handlebars helpers here
+
 Handlebars.registerHelper('replaceAll', function(target, old, newV) {
     return target.replace(new RegExp(old, 'g'), newV);
 });
@@ -55,3 +61,4 @@ Handlebars.registerHelper('removePrefix', function(s, prefix) {
 Handlebars.registerHelper('removeSuffix', function(s, suffix) {
     return s.endsWith(suffix) ? s.slice(0, -suffix.length) : s;
 });
+`
