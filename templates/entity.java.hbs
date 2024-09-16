@@ -1,0 +1,24 @@
+/**
+ * @gencoder.generated: src/main/{{replaceAll properties.package '\.' '/'}}/{{pascalCase table.name}}.java
+ */
+
+package {{properties.package}};
+
+/**
+ * @gencoder.block.start: table
+ * <p> table: {{table.name}}
+ * <p> comment: {{table.comment}}
+ * <p> indexes:
+     {{#each table.indexes}}
+ *   <p> {{name}}: ({{#each columns}}{{name}}{{#unless @last}}, {{/unless}}{{/each}})
+     {{/each}}
+ */
+public record {{pascalCase table.name}} (
+    {{#each table.columns}}
+    /**
+     * {{comment}}
+     */
+    {{> 'java_type.partial.hbs' columnType=type}} {{camelCase name}}{{#unless @last}},{{/unless}}
+    {{/each}}
+    // @gencoder.block.end: table
+) {}
