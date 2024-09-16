@@ -1,30 +1,30 @@
 package model
 
 type Config struct {
-	TemplatesDir string            `yaml:"templatesDir"`
-	OutputMarker string            `yaml:"outputMarker"`
-	BlockMarker  BlockMarker       `yaml:"blockMarker"`
-	Databases    []*DatabaseConfig `yaml:"databases"`
+	TemplatesDir string            `json:"templatesDir" yaml:"templatesDir"`
+	OutputMarker string            `json:"outputMarker" yaml:"outputMarker"`
+	BlockMarker  BlockMarker       `json:"blockMarker" yaml:"blockMarker"`
+	Databases    []*DatabaseConfig `json:"databases" yaml:"databases"`
 }
 
 type DatabaseConfig struct {
-	Name       string            `yaml:"name"`
-	Dsn        string            `yaml:"dsn"`
-	Schema     string            `yaml:"schema"`
-	Properties map[string]string `yaml:"properties"`
-	Tables     []*TableConfig    `yaml:"tables"`
+	Name       string            `json:"name" yaml:"name"`
+	Dsn        string            `json:"dsn" yaml:"dsn"`
+	Schema     string            `json:"schema" yaml:"schema"`
+	Properties map[string]string `json:"properties" yaml:"properties"`
+	Tables     []*TableConfig    `json:"tables" yaml:"tables"`
 }
 
 type TableConfig struct {
-	Schema        string            `yaml:"schema"`
-	Name          string            `yaml:"name"`
-	Properties    map[string]string `yaml:"properties"`
-	IgnoreColumns []string          `yaml:"ignoreColumns"`
+	Schema        string            `json:"schema" yaml:"schema"`
+	Name          string            `json:"name" yaml:"name"`
+	Properties    map[string]string `json:"properties" yaml:"properties"`
+	IgnoreColumns []string          `json:"ignoreColumns" yaml:"ignoreColumns"`
 }
 
 type BlockMarker struct {
-	Start string `yaml:"start"`
-	End   string `yaml:"end"`
+	Start string `json:"start" yaml:"start"`
+	End   string `json:"end" yaml:"end"`
 }
 
 func (c Config) GetTemplatesDir() string {
