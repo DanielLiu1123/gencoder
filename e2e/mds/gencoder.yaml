@@ -20,7 +20,7 @@ databases:
     properties:
       package: defaultpackage
     tables:
-      - name: 'user2'
+      - name: 'user'
         properties:
           package: postgrespackage
         ignoreColumns:
