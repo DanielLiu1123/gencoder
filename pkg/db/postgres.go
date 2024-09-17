@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"github.com/DanielLiu1123/gencoder/pkg/model"
 	"slices"
 	"sort"
@@ -23,6 +24,9 @@ WHERE table_schema = $1
 	tableRow := db.QueryRowContext(ctx, tableSql, schema, name)
 	var t model.Table
 	if err := tableRow.Scan(&t.Schema, &t.Name, &t.Comment); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
 		return nil, err
 	}
 
@@ -53,7 +57,7 @@ ORDER BY a.attnum;
 	}
 	defer columnRows.Close()
 
-	var columns []*model.Column
+	columns := make([]*model.Column, 0)
 	for columnRows.Next() {
 		var col model.Column
 		if err := columnRows.Scan(&col.Ordinal, &col.Name, &col.Type, &col.IsNullable, &col.DefaultValue, &col.IsPrimaryKey, &col.Comment); err != nil {
@@ -118,7 +122,7 @@ ORDER BY ic.relname, indkey_col.ordinality;
 		})
 	}
 
-	var indexes []*model.Index
+	indexes := make([]*model.Index, 0)
 	for _, index := range indexMap {
 		indexes = append(indexes, index)
 	}

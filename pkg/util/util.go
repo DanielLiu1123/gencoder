@@ -143,6 +143,12 @@ func collectRenderContextsForDBConfig(dbCfg *model.DatabaseConfig) []*model.Rend
 			log.Fatal(err)
 		}
 
+		// table not found
+		if table == nil {
+			log.Printf("table %s.%s not found, skipping", schema, tbCfg.Name)
+			continue
+		}
+
 		ctx := createRenderContext(dbCfg, tbCfg, table)
 
 		contexts = append(contexts, ctx)
