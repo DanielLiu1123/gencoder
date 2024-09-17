@@ -41,7 +41,7 @@ func LoadTemplates(cfg *model.Config) ([]*model.Tpl, error) {
 			return err
 		}
 
-		if d.IsDir() || !strings.HasSuffix(d.Name(), ".hbs") {
+		if d.IsDir() {
 			return nil
 		}
 
