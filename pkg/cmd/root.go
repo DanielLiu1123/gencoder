@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/DanielLiu1123/gencoder/pkg/cmd/generate"
+	initCmd "github.com/DanielLiu1123/gencoder/pkg/cmd/init"
 	"github.com/DanielLiu1123/gencoder/pkg/cmd/introspect"
 	"github.com/DanielLiu1123/gencoder/pkg/model"
 	"github.com/spf13/cobra"
@@ -27,6 +28,7 @@ func NewCmdRoot(buildInfo *model.BuildInfo) *cobra.Command {
 
 	c.AddCommand(generate.NewCmdGenerate(opt))
 	c.AddCommand(introspect.NewCmdIntrospect(opt))
+	c.AddCommand(initCmd.NewCmdInit(opt))
 
 	return c
 }
