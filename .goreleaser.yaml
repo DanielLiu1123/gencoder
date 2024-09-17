@@ -1,16 +1,7 @@
-# This is an example .goreleaser.yml file with some sensible defaults.
-# Make sure to check the documentation at https://goreleaser.com
-
-# The lines below are called `modelines`. See `:help modeline`
-# Feel free to remove those if you don't want/need to use them.
-# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
-# vim: set ts=2 sw=2 tw=0 fo=cnqoj
-
 version: 2
 
 builds:
-  - id: gencoder
-    main: ./cmd/gencoder
+  - main: ./cmd/gencoder
     env:
       - CGO_ENABLED=0
     goos:
@@ -35,6 +26,13 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
+
+# https://goreleaser.com/customization/release/#github
+release:
+  github:
+    owner: DanielLiu1123
+    name: gencoder
+  draft: true
 
 #brews:
 #  - name: gencoder
