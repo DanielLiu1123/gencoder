@@ -4,8 +4,6 @@ import (
 	"github.com/DanielLiu1123/gencoder/pkg/cmd"
 	"github.com/DanielLiu1123/gencoder/pkg/model"
 	"log"
-	"time"
-
 	// drivers
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
@@ -21,8 +19,7 @@ func main() {
 	log.SetFlags(0)
 
 	buildInfo := &model.BuildInfo{
-		Version:   version,
-		BuildTime: time.Now(),
+		Version: version,
 	}
 
 	err := cmd.NewCmdRoot(buildInfo).Execute()
