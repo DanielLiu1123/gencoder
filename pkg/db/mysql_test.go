@@ -2,8 +2,8 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"github.com/stretchr/testify/assert"
+	"github.com/xo/dburl"
 	"os/exec"
 	"testing"
 	"time"
@@ -56,17 +56,10 @@ func TestGenMySQLTable(t *testing.T) {
 	// Wait for MySQL to initialize
 	time.Sleep(10 * time.Second)
 
-	dsn := "root:root@tcp(127.0.0.1:3306)/testdb"
-	db, err := sql.Open("mysql", dsn)
+	db, err := dburl.Open("mysql://root:root@localhost:3306/testdb")
 	if err != nil {
-		t.Fatalf("Failed to connect to the database: %s", err)
+		t.Fatalf("Failed to open database connection: %s", err)
 	}
-	defer func(db *sql.DB) {
-		err := db.Close()
-		if err != nil {
-			t.Fatalf("Failed to close the database: %s", err)
-		}
-	}(db)
 
 	_, err = db.Exec(`CREATE TABLE testdb.user (
         id INT AUTO_INCREMENT PRIMARY KEY,
