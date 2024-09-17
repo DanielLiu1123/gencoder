@@ -1,5 +1,5 @@
 package model
 
 type GlobalOptions struct {
-	Config string
+	Config string `json:"config" yaml:"config"` // Where to read gencoder.yaml
 }

@@ -15,7 +15,7 @@ before:
 
 builds:
   - id: gencoder
-    main: ./cmd/gencoder/main.go
+    main: ./cmd/gencoder
     env:
       - CGO_ENABLED=0
     goos:
@@ -41,20 +41,15 @@ archives:
       - goos: windows
         format: zip
 
-changelog:
-  sort: asc
-  filters:
-    exclude:
-      - "^docs:"
-      - "^test:"
-
-brews:
-  - name: gencoder
-    homepage: "https://github.com/DanielLiu1123/gencoder"
-    description: "The ultimate code generator for any language/framework."
-    install: |
-      bin.install "gencoder"
-    test: |
-      system "#{bin}/gencoder version"
-    dependencies:
-      - go
+#brews:
+#  - name: gencoder
+#    homepage: "https://github.com/DanielLiu1123/gencoder"
+#    repository:
+#      pull_request:
+#    description: "The ultimate code generator for any language/framework."
+#    install: |
+#      bin.install "gencoder"
+#    test: |
+#      system "#{bin}/gencoder version"
+#    dependencies:
+#      - go

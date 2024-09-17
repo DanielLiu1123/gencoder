@@ -1,6 +1,7 @@
 package jsruntime
 
 import (
+	"github.com/DanielLiu1123/gencoder/pkg/jsruntime/gen"
 	"github.com/dop251/goja"
 	"log"
 	"sync"
@@ -20,7 +21,7 @@ func initVM() *goja.Runtime {
 	vm := goja.New()
 
 	// Load Handlebars.js
-	_, err := vm.RunString(HandlebarsJS)
+	_, err := vm.RunString(gen.HandlebarsJS)
 	if err != nil {
 		log.Fatalf("Error loading Handlebars.js: %v", err)
 	}
@@ -40,7 +41,7 @@ func initVM() *goja.Runtime {
 		log.Fatalf("Error initializing Handlebars.js: %v", err)
 	}
 
-	_, err = vm.RunString(HelperJS)
+	_, err = vm.RunString(gen.HelperJS)
 	if err != nil {
 		log.Fatalf("Error registering helper functions: %v", err)
 	}
