@@ -42,7 +42,7 @@ public class {{pascalCase table.name}}Mapper extends CommonCountMapper, CommonDe
     BasicColumn[] selectList = BasicColumn.columnList({{#each table.columns}}{{camelCase name}}{{#unless @last}}, {{/unless}}{{/each}});
 
     @InsertProvider(type=SqlProviderAdapter.class, method="insert")
-    @SelectKey(statement="SELECT LAST_INSERT_ID()", keyProperty="row.id", before=false, resultType={{> 'id_type.partial.hbs' columns=table.columns}}.class)
+    @SelectKey(statement="SELECT LAST_INSERT_ID()", keyProperty="row.id", before=false, resultType={{> 'id_type.partial.hbs'}}.class)
     int insert(InsertStatementProvider<{{pascalCase table.name}}> insertStatement);
 
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
@@ -65,7 +65,7 @@ public class {{pascalCase table.name}}Mapper extends CommonCountMapper, CommonDe
         return MyBatis3Utils.deleteFrom(this::delete, {{camelCase table.name}}, completer);
     }
 
-    default int deleteByPrimaryKey(Integer id_) {
+    default int deleteByPrimaryKey({{> 'id_type.partial.hbs'}} id_) {
         return delete(c ->
             c.where(id, isEqualTo(id_))
         );
@@ -74,9 +74,9 @@ public class {{pascalCase table.name}}Mapper extends CommonCountMapper, CommonDe
     default int insert({{pascalCase table.name}} row) {
         return MyBatis3Utils.insert(this::insert, row, {{camelCase table.name}}, c -> c
             {{#each table.columns}}
-            {{#if (ne name 'id')}}
+            {{#unless isPrimaryKey}}
             .map({{camelCase name}}).toProperty("{{camelCase name}}")
-            {{/if}}
+            {{/unless}}
             {{/each}}
         );
     }
@@ -84,9 +84,9 @@ public class {{pascalCase table.name}}Mapper extends CommonCountMapper, CommonDe
     default int insertSelective({{pascalCase table.name}} row) {
         return MyBatis3Utils.insert(this::insert, row, user, c -> c
             {{#each table.columns}}
-            {{#if (ne name 'id')}}
+            {{#unless isPrimaryKey}}
             .map({{camelCase name}}).toPropertyWhenPresent("{{camelCase name}}")
-            {{/if}}
+            {{/unless}}
             {{/each}}
         );
     }
@@ -103,7 +103,7 @@ public class {{pascalCase table.name}}Mapper extends CommonCountMapper, CommonDe
         return MyBatis3Utils.selectDistinct(this::selectMany, selectList, {{camelCase table.name}}, completer);
     }
 
-    default Optional<{{pascalCase table.name}}> selectByPrimaryKey(Integer id_) {
+    default Optional<{{pascalCase table.name}}> selectByPrimaryKey({{> 'id_type.partial.hbs'}} id_) {
         return selectOne(c ->
             c.where(id, isEqualTo(id_))
         );
@@ -116,40 +116,40 @@ public class {{pascalCase table.name}}Mapper extends CommonCountMapper, CommonDe
     static UpdateDSL<UpdateModel> updateAllColumns({{pascalCase table.name}} row, UpdateDSL<UpdateModel> dsl) {
         return dsl
         {{#each table.columns}}
-            {{#if (ne name 'id')}}
+            {{#unless isPrimaryKey}}
             .set({{camelCase name}}).equalTo(row::get{{upperFirst (camelCase name)}}){{#if @last}};{{/if}}
-            {{/if}}
+            {{/unless}}
         {{/each}}
     }
 
     static UpdateDSL<UpdateModel> updateSelectiveColumns({{pascalCase table.name}} row, UpdateDSL<UpdateModel> dsl) {
         return dsl
         {{#each table.columns}}
-            {{#if (ne name 'id')}}
+            {{#unless isPrimaryKey}}
             .set({{camelCase name}}).equalToWhenPresent(row::get{{upperFirst (camelCase name)}}){{#if @last}};{{/if}}
-            {{/if}}
+            {{/unless}}
         {{/each}}
     }
 
     default int updateByPrimaryKey({{pascalCase table.name}} row) {
         return update(c -> c
-                {{#each table.columns}}
-                {{#if (ne name 'id')}}
+            {{#each table.columns}}
+                {{#unless isPrimaryKey}}
                 .set({{camelCase name}}).equalTo(row::get{{upperFirst (camelCase name)}})
-                {{/if}}
-                {{/each}}
+                {{/unless}}
+            {{/each}}
                 .where(id, isEqualTo(row::getId))
         );
     }
 
     default int updateByPrimaryKeySelective({{pascalCase table.name}} row) {
         return update(c -> c
-                {{#each table.columns}}
+            {{#each table.columns}}
                 {{#unless isPrimaryKey}}
                 .set({{camelCase name}}).equalToWhenPresent(row::get{{upperFirst (camelCase name)}})
                 {{/unless}}
-                {{/each}}
-                .where({{> 'id_name.partial.hbs' columns=table.columns}}, isEqualTo(row::getId))
+            {{/each}}
+                .where(id, isEqualTo(row::getId))
         );
     }
 

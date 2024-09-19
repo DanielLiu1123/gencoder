@@ -7,9 +7,9 @@ databases:
     dsn: 'mysql://root:root@localhost:3306/testdb'
     schema: testdb
     properties:
-      entityPkg: com.example.entity
-      mapperPkg: com.example.mapper
-      dynamicSQLPkg: com.example.mapper
+      entityPkg: com.example.entity.mysql
+      mapperPkg: com.example.mapper.mysql
+      dynamicSQLPkg: com.example.mapper.mysql
     tables:
       - name: 'user'
         ignoreColumns:
@@ -18,9 +18,9 @@ databases:
     dsn: 'postgres://root:root@localhost:5432/testdb?sslmode=disable'
     schema: public
     properties:
-      entityPkg: com.example.pg.entity
-      mapperPkg: com.example.pg.mapper
-      dynamicSQLPkg: com.example.pg.mapper
+      entityPkg: com.example.entity.postgres
+      mapperPkg: com.example.mapper.postgres
+      dynamicSQLPkg: com.example.mapper.postgres
     tables:
       - name: 'user'
         ignoreColumns:
