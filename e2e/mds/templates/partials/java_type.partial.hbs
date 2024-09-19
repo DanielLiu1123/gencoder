@@ -1,0 +1,16 @@
+{{~#if (match 'varchar\(\d+\)|char|tinytext|text|mediumtext|longtext' columnType)}}String
+{{~else if (match 'bigint' columnType)}}Long
+{{~else if (match 'int|integer|mediumint' columnType)}}Integer
+{{~else if (match 'smallint' columnType)}}Short
+{{~else if (match 'tinyint' columnType)}}Byte
+{{~else if (match 'bit|bool|boolean' columnType)}}Boolean
+{{~else if (match 'decimal' columnType)}}java.math.BigDecimal
+{{~else if (match 'float' columnType)}}Double
+{{~else if (match 'datetime' columnType)}}java.time.LocalDateTime
+{{~else if (match 'date' columnType)}}java.time.LocalDate
+{{~else if (match 'time' columnType)}}java.time.LocalTime
+{{~else if (match 'timestamp' columnType)}}java.time.LocalDateTime
+{{~else if (match 'varbinary' columnType)}}byte[]
+{{~else if (match 'enum.*' columnType)}}String
+{{~else}}Object
+{{~/if}}

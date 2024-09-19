@@ -1,8 +1,0 @@
-{{~#if (match 'varchar.*|text' columnType)}}String
-{{~else if (match 'bigint|int64' columnType)}}Long
-{{~else if (match '.*int.*' columnType)}}Integer
-{{~else if (match 'timestamp' columnType)}}java.util.Date
-{{~else if (match 'enum.*' columnType)}}String
-{{~else if (match 'decimal.*' columnType)}}java.math.BigDecimal
-{{~else}}String
-{{~/if}}
