@@ -1,0 +1,5 @@
+{{#each columns}}
+{{~#if isPrimaryKey}}
+{{> 'java_type.partial.hbs' columnType=type}}
+{{~/if}}
+{{/each}}

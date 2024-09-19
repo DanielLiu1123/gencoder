@@ -1,9 +1,10 @@
 /**
  * @gencoder.generated: src/main/java/{{replaceAll properties.mapperPkg '\.' '/'}}/{{pascalCase table.name}}Mapper.java
  */
+
 package {{properties.mapperPkg}};
 
-import static {{properties.mapperPkg}}.{{pascalCase table.name}}DynamicSqlSupport.*;
+import static {{properties.dynamicSQLPkg}}.{{pascalCase table.name}}DynamicSqlSupport.*;
 import static org.mybatis.dynamic.sql.SqlBuilder.isEqualTo;
 
 import {{properties.entityPkg}}.{{pascalCase table.name}};
@@ -41,7 +42,7 @@ public class {{pascalCase table.name}}Mapper extends CommonCountMapper, CommonDe
     BasicColumn[] selectList = BasicColumn.columnList({{#each table.columns}}{{camelCase name}}{{#unless @last}}, {{/unless}}{{/each}});
 
     @InsertProvider(type=SqlProviderAdapter.class, method="insert")
-    @SelectKey(statement="SELECT LAST_INSERT_ID()", keyProperty="row.id", before=false, resultType=Integer.class)
+    @SelectKey(statement="SELECT LAST_INSERT_ID()", keyProperty="row.id", before=false, resultType={{> 'id_type.partial.hbs' columns=table.columns}}.class)
     int insert(InsertStatementProvider<{{pascalCase table.name}}> insertStatement);
 
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
@@ -144,11 +145,11 @@ public class {{pascalCase table.name}}Mapper extends CommonCountMapper, CommonDe
     default int updateByPrimaryKeySelective({{pascalCase table.name}} row) {
         return update(c -> c
                 {{#each table.columns}}
-                {{#if (ne name 'id')}}
+                {{#unless isPrimaryKey}}
                 .set({{camelCase name}}).equalToWhenPresent(row::get{{upperFirst (camelCase name)}})
-                {{/if}}
+                {{/unless}}
                 {{/each}}
-                .where(id, isEqualTo(row::getId))
+                .where({{> 'id_name.partial.hbs' columns=table.columns}}, isEqualTo(row::getId))
         );
     }
 

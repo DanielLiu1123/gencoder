@@ -7,21 +7,21 @@ databases:
     dsn: 'mysql://root:root@localhost:3306/testdb'
     schema: testdb
     properties:
-      package: defaultpackage
+      entityPkg: com.example.entity
+      mapperPkg: com.example.mapper
+      dynamicSQLPkg: com.example.mapper
     tables:
       - name: 'user'
-        properties:
-          package: mysqlpackage
         ignoreColumns:
           - deleted_at
   - name: postgres
     dsn: 'postgres://root:root@localhost:5432/testdb?sslmode=disable'
     schema: public
     properties:
-      package: defaultpackage
+      entityPkg: com.example.pg.entity
+      mapperPkg: com.example.pg.mapper
+      dynamicSQLPkg: com.example.pg.mapper
     tables:
       - name: 'user'
-        properties:
-          package: postgrespackage
         ignoreColumns:
           - deleted_at
