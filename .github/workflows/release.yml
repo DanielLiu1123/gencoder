@@ -17,6 +17,18 @@ jobs:
         with:
           fetch-depth: 0 # It is required for the changelog to work correctly.
 
+      - name: Check version
+        run: |
+          VERSION_TAG=${{ github.ref_name }}
+          VERSION_TAG=${VERSION_TAG#v}
+          PROJECT_VERSION=$(grep 'var version = ' cmd/gencoder/main.go | sed 's/var version = "\(.*\)"/\1/')
+          if [[ "$PROJECT_VERSION" == "${VERSION_TAG}" ]]; then
+            echo "Version match: tag $VERSION_TAG matches project version $PROJECT_VERSION, proceeding with release"
+          else
+            echo "Version mismatch: tag $VERSION_TAG does not match project version $PROJECT_VERSION"
+            exit 1
+          fi
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
