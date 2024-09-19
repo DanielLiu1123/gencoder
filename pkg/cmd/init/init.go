@@ -37,20 +37,12 @@ databases:
     tables:
       - name: 'user'
         properties:
-          package: mysqlpackage
+          package: 'com.example'
         ignoreColumns:
           - deleted_at
-  - name: postgres
-    dsn: 'postgres://root:root@localhost:5432/testdb?sslmode=disable'
-    properties:
-      package: defaultpackage
-    tables:
-      - name: 'user'
-        properties:
-          package: postgrespackage
-        ignoreColumns:
-          - deleted_at`
+`
 
+	// init gencoder.yaml
 	if _, err := os.Stat("gencoder.yaml"); err != nil {
 		err := os.WriteFile("gencoder.yaml", []byte(gencoderYaml), 0644)
 		if err != nil {
@@ -89,8 +81,17 @@ public record {{pascalCase table.name}} (
      */
     {{> 'java_type.partial.hbs' columnType=type}} {{camelCase name}}{{#unless @last}},{{/unless}}
     {{/each}}
+
+	// NOTE: you can't make changes in the block, it will be overwritten by generating again
+
     // @gencoder.block.end: table
-) {}
+) {
+	
+	// TIP: you can make changes outside the block, it will not be overwritten by generating again
+	public void hello() {
+		System.out.println("Hello, World!");
+	}
+}
 `
 
 	if _, err := os.Stat("templates/entity.java.hbs"); err != nil {
