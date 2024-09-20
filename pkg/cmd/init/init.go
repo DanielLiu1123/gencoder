@@ -60,7 +60,7 @@ databases:
 
 	// init templates
 	entityJava := `/**
- * @gencoder.generated: src/main/java/{{replaceAll properties.package '\.' '/'}}/{{pascalCase table.name}}.java
+ * @gencoder.generated: src/main/java/{{_replaceAll properties.package '.' '/'}}/{{_pascalCase table.name}}.java
  */
 
 package {{properties.package}};
@@ -74,12 +74,12 @@ package {{properties.package}};
  *   <p> {{name}}: ({{#each columns}}{{name}}{{#unless @last}}, {{/unless}}{{/each}})
      {{/each}}
  */
-public record {{pascalCase table.name}} (
+public record {{_pascalCase table.name}} (
     {{#each table.columns}}
     /**
      * {{comment}}
      */
-    {{> 'java_type.partial.hbs' columnType=type}} {{camelCase name}}{{#unless @last}},{{/unless}}
+    {{> 'java_type.partial.hbs' columnType=type}} {{_camelCase name}}{{#unless @last}},{{/unless}}
     {{/each}}
 
 	// NOTE: you can't make changes in the block, it will be overwritten by generating again
@@ -101,20 +101,20 @@ public record {{pascalCase table.name}} (
 		}
 	}
 
-	javaTypePartial := `{{~#if (match 'varchar\(\d+\)|char|tinytext|text|mediumtext|longtext' columnType)}}String
-{{~else if (match 'bigint' columnType)}}Long
-{{~else if (match 'int|integer|mediumint' columnType)}}Integer
-{{~else if (match 'smallint' columnType)}}Short
-{{~else if (match 'tinyint' columnType)}}Byte
-{{~else if (match 'bit|bool|boolean' columnType)}}Boolean
-{{~else if (match 'decimal' columnType)}}java.math.BigDecimal
-{{~else if (match 'float' columnType)}}Double
-{{~else if (match 'datetime' columnType)}}java.time.LocalDateTime
-{{~else if (match 'date' columnType)}}java.time.LocalDate
-{{~else if (match 'time' columnType)}}java.time.LocalTime
-{{~else if (match 'timestamp' columnType)}}java.time.LocalDateTime
-{{~else if (match 'varbinary' columnType)}}byte[]
-{{~else if (match 'enum.*' columnType)}}String
+	javaTypePartial := `{{~#if (_match 'varchar\(\d+\)|char|tinytext|text|mediumtext|longtext' columnType)}}String
+{{~else if (_match 'bigint' columnType)}}Long
+{{~else if (_match 'int|integer|mediumint' columnType)}}Integer
+{{~else if (_match 'smallint' columnType)}}Short
+{{~else if (_match 'tinyint' columnType)}}Byte
+{{~else if (_match 'bit|bool|boolean' columnType)}}Boolean
+{{~else if (_match 'decimal' columnType)}}java.math.BigDecimal
+{{~else if (_match 'float' columnType)}}Double
+{{~else if (_match 'datetime' columnType)}}java.time.LocalDateTime
+{{~else if (_match 'date' columnType)}}java.time.LocalDate
+{{~else if (_match 'time' columnType)}}java.time.LocalTime
+{{~else if (_match 'timestamp' columnType)}}java.time.LocalDateTime
+{{~else if (_match 'varbinary' columnType)}}byte[]
+{{~else if (_match 'enum.*' columnType)}}String
 {{~else}}Object
 {{~/if}}`
 

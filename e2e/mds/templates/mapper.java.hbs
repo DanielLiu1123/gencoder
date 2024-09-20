@@ -1,13 +1,13 @@
 /**
- * @gencoder.generated: src/main/java/{{replaceAll properties.mapperPkg '\.' '/'}}/{{pascalCase table.name}}Mapper.java
+ * @gencoder.generated: src/main/java/{{_replaceAll properties.mapperPkg '.' '/'}}/{{_pascalCase table.name}}Mapper.java
  */
 
 package {{properties.mapperPkg}};
 
-import static {{properties.dynamicSQLPkg}}.{{pascalCase table.name}}DynamicSqlSupport.*;
+import static {{properties.dynamicSQLPkg}}.{{_pascalCase table.name}}DynamicSqlSupport.*;
 import static org.mybatis.dynamic.sql.SqlBuilder.isEqualTo;
 
-import {{properties.entityPkg}}.{{pascalCase table.name}};
+import {{properties.entityPkg}}.{{_pascalCase table.name}};
 import jakarta.annotation.Generated;
 import java.util.List;
 import java.util.Map;
@@ -35,34 +35,34 @@ import org.mybatis.dynamic.sql.util.mybatis3.CommonDeleteMapper;
 import org.mybatis.dynamic.sql.util.mybatis3.CommonUpdateMapper;
 import org.mybatis.dynamic.sql.util.mybatis3.MyBatis3Utils;
 
-public class {{pascalCase table.name}}Mapper extends CommonCountMapper, CommonDeleteMapper, CommonUpdateMapper {
+public class {{_pascalCase table.name}}Mapper extends CommonCountMapper, CommonDeleteMapper, CommonUpdateMapper {
 
     // @gencoder.block.start: mapper
 
-    BasicColumn[] selectList = BasicColumn.columnList({{#each table.columns}}{{camelCase name}}{{#unless @last}}, {{/unless}}{{/each}});
+    BasicColumn[] selectList = BasicColumn.columnList({{#each table.columns}}{{_camelCase name}}{{#unless @last}}, {{/unless}}{{/each}});
 
     @InsertProvider(type=SqlProviderAdapter.class, method="insert")
     @SelectKey(statement="SELECT LAST_INSERT_ID()", keyProperty="row.id", before=false, resultType={{> 'id_type.partial.hbs'}}.class)
-    int insert(InsertStatementProvider<{{pascalCase table.name}}> insertStatement);
+    int insert(InsertStatementProvider<{{_pascalCase table.name}}> insertStatement);
 
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
-    @Results(id="{{pascalCase table.name}}Result", value = {
+    @Results(id="{{_pascalCase table.name}}Result", value = {
         {{#each table.columns}}
-        @Result(column="{{name}}", property="{{camelCase name}}"/**, jdbcType={{jdbcType}}*/{{#if isPrimaryKey}}, id=true{{/if}}){{#unless @last}},{{/unless}}
+        @Result(column="{{name}}", property="{{_camelCase name}}"/**, jdbcType={{jdbcType}}*/{{#if isPrimaryKey}}, id=true{{/if}}){{#unless @last}},{{/unless}}
         {{/each}}
     })
-    List<{{pascalCase table.name}}> selectMany(SelectStatementProvider selectStatement);
+    List<{{_pascalCase table.name}}> selectMany(SelectStatementProvider selectStatement);
 
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
-    @ResultMap("{{pascalCase table.name}}Result")
-    Optional<{{pascalCase table.name}}> selectOne(SelectStatementProvider selectStatement);
+    @ResultMap("{{_pascalCase table.name}}Result")
+    Optional<{{_pascalCase table.name}}> selectOne(SelectStatementProvider selectStatement);
 
     default long count(CountDSLCompleter completer) {
-        return MyBatis3Utils.countFrom(this::count, {{camelCase table.name}}, completer);
+        return MyBatis3Utils.countFrom(this::count, {{_camelCase table.name}}, completer);
     }
 
     default int delete(DeleteDSLCompleter completer) {
-        return MyBatis3Utils.deleteFrom(this::delete, {{camelCase table.name}}, completer);
+        return MyBatis3Utils.deleteFrom(this::delete, {{_camelCase table.name}}, completer);
     }
 
     default int deleteByPrimaryKey({{> 'id_type.partial.hbs'}} id_) {
@@ -71,82 +71,82 @@ public class {{pascalCase table.name}}Mapper extends CommonCountMapper, CommonDe
         );
     }
 
-    default int insert({{pascalCase table.name}} row) {
-        return MyBatis3Utils.insert(this::insert, row, {{camelCase table.name}}, c -> c
+    default int insert({{_pascalCase table.name}} row) {
+        return MyBatis3Utils.insert(this::insert, row, {{_camelCase table.name}}, c -> c
             {{#each table.columns}}
             {{#unless isPrimaryKey}}
-            .map({{camelCase name}}).toProperty("{{camelCase name}}")
+            .map({{_camelCase name}}).toProperty("{{_camelCase name}}")
             {{/unless}}
             {{/each}}
         );
     }
 
-    default int insertSelective({{pascalCase table.name}} row) {
+    default int insertSelective({{_pascalCase table.name}} row) {
         return MyBatis3Utils.insert(this::insert, row, user, c -> c
             {{#each table.columns}}
             {{#unless isPrimaryKey}}
-            .map({{camelCase name}}).toPropertyWhenPresent("{{camelCase name}}")
+            .map({{_camelCase name}}).toPropertyWhenPresent("{{_camelCase name}}")
             {{/unless}}
             {{/each}}
         );
     }
 
-    default Optional<{{pascalCase table.name}}> selectOne(SelectDSLCompleter completer) {
-        return MyBatis3Utils.selectOne(this::selectOne, selectList, {{camelCase table.name}}, completer);
+    default Optional<{{_pascalCase table.name}}> selectOne(SelectDSLCompleter completer) {
+        return MyBatis3Utils.selectOne(this::selectOne, selectList, {{_camelCase table.name}}, completer);
     }
 
-    default List<{{pascalCase table.name}}> select(SelectDSLCompleter completer) {
-        return MyBatis3Utils.selectList(this::selectMany, selectList, {{camelCase table.name}}, completer);
+    default List<{{_pascalCase table.name}}> select(SelectDSLCompleter completer) {
+        return MyBatis3Utils.selectList(this::selectMany, selectList, {{_camelCase table.name}}, completer);
     }
 
-    default List<{{pascalCase table.name}}> selectDistinct(SelectDSLCompleter completer) {
-        return MyBatis3Utils.selectDistinct(this::selectMany, selectList, {{camelCase table.name}}, completer);
+    default List<{{_pascalCase table.name}}> selectDistinct(SelectDSLCompleter completer) {
+        return MyBatis3Utils.selectDistinct(this::selectMany, selectList, {{_camelCase table.name}}, completer);
     }
 
-    default Optional<{{pascalCase table.name}}> selectByPrimaryKey({{> 'id_type.partial.hbs'}} id_) {
+    default Optional<{{_pascalCase table.name}}> selectByPrimaryKey({{> 'id_type.partial.hbs'}} id_) {
         return selectOne(c ->
             c.where(id, isEqualTo(id_))
         );
     }
 
     default int update(UpdateDSLCompleter completer) {
-        return MyBatis3Utils.update(this::update, {{camelCase table.name}}, completer);
+        return MyBatis3Utils.update(this::update, {{_camelCase table.name}}, completer);
     }
 
-    static UpdateDSL<UpdateModel> updateAllColumns({{pascalCase table.name}} row, UpdateDSL<UpdateModel> dsl) {
+    static UpdateDSL<UpdateModel> updateAllColumns({{_pascalCase table.name}} row, UpdateDSL<UpdateModel> dsl) {
         return dsl
         {{#each table.columns}}
             {{#unless isPrimaryKey}}
-            .set({{camelCase name}}).equalTo(row::get{{upperFirst (camelCase name)}}){{#if @last}};{{/if}}
+            .set({{_camelCase name}}).equalTo(row::get{{_pascalCase name}}){{#if @last}};{{/if}}
             {{/unless}}
         {{/each}}
     }
 
-    static UpdateDSL<UpdateModel> updateSelectiveColumns({{pascalCase table.name}} row, UpdateDSL<UpdateModel> dsl) {
+    static UpdateDSL<UpdateModel> updateSelectiveColumns({{_pascalCase table.name}} row, UpdateDSL<UpdateModel> dsl) {
         return dsl
         {{#each table.columns}}
             {{#unless isPrimaryKey}}
-            .set({{camelCase name}}).equalToWhenPresent(row::get{{upperFirst (camelCase name)}}){{#if @last}};{{/if}}
+            .set({{_camelCase name}}).equalToWhenPresent(row::get{{_pascalCase name}}){{#if @last}};{{/if}}
             {{/unless}}
         {{/each}}
     }
 
-    default int updateByPrimaryKey({{pascalCase table.name}} row) {
+    default int updateByPrimaryKey({{_pascalCase table.name}} row) {
         return update(c -> c
             {{#each table.columns}}
                 {{#unless isPrimaryKey}}
-                .set({{camelCase name}}).equalTo(row::get{{upperFirst (camelCase name)}})
+                .set({{_camelCase name}}).equalTo(row::get{{_pascalCase name}})
                 {{/unless}}
             {{/each}}
                 .where(id, isEqualTo(row::getId))
         );
     }
 
-    default int updateByPrimaryKeySelective({{pascalCase table.name}} row) {
+    default int updateByPrimaryKeySelective({{_pascalCase table.name}} row) {
         return update(c -> c
             {{#each table.columns}}
                 {{#unless isPrimaryKey}}
-                .set({{camelCase name}}).equalToWhenPresent(row::get{{upperFirst (camelCase name)}})
+                .set({{_camelCase name}}).equalToWhenPresent(row::get{{_pascalCase name}})
                 {{/unless}}
             {{/each}}
                 .where(id, isEqualTo(row::getId))

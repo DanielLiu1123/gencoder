@@ -35,16 +35,3 @@ release:
     owner: DanielLiu1123
     name: gencoder
   draft: true
-
-#brews:
-#  - name: gencoder
-#    homepage: "https://github.com/DanielLiu1123/gencoder"
-#    repository:
-#      pull_request:
-#    description: "The ultimate code generator for any language/framework."
-#    install: |
-#      bin.install "gencoder"
-#    test: |
-#      system "#{bin}/gencoder version"
-#    dependencies:
-#      - go

@@ -1,5 +1,5 @@
 /**
- * @gencoder.generated: src/main/java/{{replaceAll properties.dynamicSQLPkg '\.' '/'}}/{{pascalCase table.name}}DynamicSqlSupport.java
+ * @gencoder.generated: src/main/java/{{_replaceAll properties.dynamicSQLPkg '.' '/'}}/{{_pascalCase table.name}}DynamicSqlSupport.java
  */
 
 package {{properties.dynamicSQLPkg}};
@@ -7,23 +7,23 @@ package {{properties.dynamicSQLPkg}};
 import org.mybatis.dynamic.sql.SqlColumn;
 import org.mybatis.dynamic.sql.AliasableSqlTable;
 
-public final class {{pascalCase table.name}}DynamicSqlSupport {
+public final class {{_pascalCase table.name}}DynamicSqlSupport {
 
     // @gencoder.block.start: DynamicSqlSupport
-    public static final {{pascalCase table.name}} {{camelCase table.name}} = new {{pascalCase table.name}}();
+    public static final {{_pascalCase table.name}} {{_camelCase table.name}} = new {{_pascalCase table.name}}();
 
     {{#each table.columns}}
-    public static final SqlColumn<{{> 'java_type.partial.hbs' columnType=type}}> {{camelCase name}} = {{camelCase ../table.name}}.{{camelCase name}};
+    public static final SqlColumn<{{> 'java_type.partial.hbs' columnType=type}}> {{_camelCase name}} = {{_camelCase ../table.name}}.{{_camelCase name}};
     {{/each}}
 
-    public static final class {{pascalCase table.name}} extends AliasableSqlTable<{{pascalCase table.name}}> {
+    public static final class {{_pascalCase table.name}} extends AliasableSqlTable<{{_pascalCase table.name}}> {
 
         {{#each table.columns}}
-        public final SqlColumn<{{> 'java_type.partial.hbs' columnType=type}}> {{camelCase name}} = column("`{{name}}`", {{> 'jdbc_type.partial.hbs' columnType=type}});
+        public final SqlColumn<{{> 'java_type.partial.hbs' columnType=type}}> {{_camelCase name}} = column("`{{name}}`", {{> 'jdbc_type.partial.hbs' columnType=type}});
         {{/each}}
 
-        public {{pascalCase table.name}}() {
-            super("{{table.name}}", {{pascalCase table.name}}::new);
+        public {{_pascalCase table.name}}() {
+            super("{{table.name}}", {{_pascalCase table.name}}::new);
         }
     }
     // @gencoder.block.end: DynamicSqlSupport

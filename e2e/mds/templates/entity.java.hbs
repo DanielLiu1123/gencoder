@@ -1,5 +1,5 @@
 /**
- * @gencoder.generated: src/main/java/{{replaceAll properties.entityPkg '\.' '/'}}/{{pascalCase table.name}}.java
+ * @gencoder.generated: src/main/java/{{_replaceAll properties.entityPkg '.' '/'}}/{{_pascalCase table.name}}.java
  */
 
 package {{properties.entityPkg}};
@@ -13,12 +13,12 @@ package {{properties.entityPkg}};
  *   <p> {{name}}: ({{#each columns}}{{name}}{{#unless @last}}, {{/unless}}{{/each}})
      {{/each}}
  */
-public record {{pascalCase table.name}} (
+public record {{_pascalCase table.name}} (
     {{#each table.columns}}
     /**
      * {{comment}}
      */
-    {{> 'java_type.partial.hbs' columnType=type}} {{camelCase name}}{{#unless @last}},{{/unless}}
+    {{> 'java_type.partial.hbs' columnType=type}} {{_camelCase name}}{{#unless @last}},{{/unless}}
     {{/each}}
     // @gencoder.block.end: table
 ) {}
