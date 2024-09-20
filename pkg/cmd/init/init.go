@@ -17,6 +17,8 @@ func NewCmdInit(globalOptions *model.GlobalOptions) *cobra.Command {
 	c := &cobra.Command{
 		Use:   "init",
 		Short: "Init basic configuration for gencoder",
+		Example: `  # Init basic configuration for gencoder
+  $ gencoder init`,
 		PreRun: func(cmd *cobra.Command, args []string) {
 		},
 		Run: func(cmd *cobra.Command, args []string) {

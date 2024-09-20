@@ -17,11 +17,14 @@ func NewCmdRoot(buildInfo *model.BuildInfo) *cobra.Command {
 		Version: buildInfo.Version,
 		Short:   "The ultimate code generator",
 		Long:    "gencoder is a code generator that generates code from templates/databases, for any languages/frameworks.",
-		Example: `  # Generate code from default config file (gencoder.yaml)
-  $ gencoder generate
+		Example: `  # Generate code from config file (default: gencoder.yaml)
+  $ gencoder generate -f gencoder.yaml
 
-  # Generate code from a specific config file
-  $ gencoder generate -f myconfig.yaml`,
+  # Init basic config for quick start
+  $ gencoder init
+
+  # Print metadata of database tables
+  $ gencoder introspect -f gencoder.yaml -o yaml`,
 	}
 
 	c.Flags().StringVarP(&opt.Config, "config", "f", "gencoder.yaml", "Config file to use")

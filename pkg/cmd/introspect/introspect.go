@@ -22,6 +22,15 @@ func NewCmdIntrospect(globalOptions *model.GlobalOptions) *cobra.Command {
 		Use:     "introspect",
 		Short:   "Print table information from database configuration",
 		Aliases: []string{"intro", "i"},
+		Example: `  # Print metadata of database tables from default config file (gencoder.yaml)
+  $ gencoder introspect
+
+  # Print metadata of database tables from a specific config file
+  $ gencoder introspect -f myconfig.yaml
+  
+  # Print metadata of database tables from a specific config file in JSON/YAML format
+  $ gencoder introspect -f myconfig.yaml -o [json|yaml]
+`,
 		PreRun: func(cmd *cobra.Command, args []string) {
 			if len(args) > 0 {
 				log.Fatalf("introspect command does not accept any arguments")
