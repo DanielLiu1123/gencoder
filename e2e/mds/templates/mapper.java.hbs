@@ -8,7 +8,6 @@ import static {{properties.dynamicSQLPkg}}.{{_pascalCase table.name}}DynamicSqlS
 import static org.mybatis.dynamic.sql.SqlBuilder.isEqualTo;
 
 import {{properties.entityPkg}}.{{_pascalCase table.name}};
-import jakarta.annotation.Generated;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -35,7 +34,8 @@ import org.mybatis.dynamic.sql.util.mybatis3.CommonDeleteMapper;
 import org.mybatis.dynamic.sql.util.mybatis3.CommonUpdateMapper;
 import org.mybatis.dynamic.sql.util.mybatis3.MyBatis3Utils;
 
-public class {{_pascalCase table.name}}Mapper extends CommonCountMapper, CommonDeleteMapper, CommonUpdateMapper {
+@Mapper
+public interface {{_pascalCase table.name}}Mapper extends CommonCountMapper, CommonDeleteMapper, CommonUpdateMapper {
 
     // @gencoder.block.start: mapper
 
@@ -48,7 +48,7 @@ public class {{_pascalCase table.name}}Mapper extends CommonCountMapper, CommonD
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
     @Results(id="{{_pascalCase table.name}}Result", value = {
         {{#each table.columns}}
-        @Result(column="{{name}}", property="{{_camelCase name}}"/**, jdbcType={{jdbcType}}*/{{#if isPrimaryKey}}, id=true{{/if}}){{#unless @last}},{{/unless}}
+        @Result(column="{{name}}", property="{{_camelCase name}}", jdbcType={{> 'mybatis_type.partial.hbs' columnType=type}}{{#if isPrimaryKey}}, id=true{{/if}}){{#unless @last}},{{/unless}}
         {{/each}}
     })
     List<{{_pascalCase table.name}}> selectMany(SelectStatementProvider selectStatement);
@@ -82,10 +82,10 @@ public class {{_pascalCase table.name}}Mapper extends CommonCountMapper, CommonD
     }
 
     default int insertSelective({{_pascalCase table.name}} row) {
-        return MyBatis3Utils.insert(this::insert, row, user, c -> c
+        return MyBatis3Utils.insert(this::insert, row, {{_camelCase table.name}}, c -> c
             {{#each table.columns}}
             {{#unless isPrimaryKey}}
-            .map({{_camelCase name}}).toPropertyWhenPresent("{{_camelCase name}}")
+            .map({{_camelCase name}}).toPropertyWhenPresent("{{_camelCase name}}", row::get{{_pascalCase name}})
             {{/unless}}
             {{/each}}
         );

@@ -1,8 +1,16 @@
-{{~#if (_match 'varchar.*|text' columnType)}}java.sql.JDBCType.VARCHAR
-{{~else if (_match 'bigint|int64' columnType)}}java.sql.JDBCType.BIGINT
-{{~else if (_match '.*int.*' columnType)}}java.sql.JDBCType.INTEGER
-{{~else if (_match 'timestamp' columnType)}}java.sql.JDBCType.TIMESTAMP
-{{~else if (_match 'enum.*' columnType)}}java.sql.JDBCType.VARCHAR
-{{~else if (_match 'decimal.*' columnType)}}java.sql.JDBCType.DECIMAL
-{{~else}}java.sql.JDBCType.VARCHAR
+{{~#if (_match 'varchar\(\d+\)|char|tinytext|text|mediumtext|longtext|json.*' columnType)}}JDBCType.VARCHAR
+{{~else if (_match 'bigint.*' columnType)}}JDBCType.BIGINT
+{{~else if (_match 'int.*|integer.*|mediumint.*' columnType)}}JDBCType.INTEGER
+{{~else if (_match 'smallint.*' columnType)}}JDBCType.SMALLINT
+{{~else if (_match 'tinyint.*' columnType)}}JDBCType.TINYINT
+{{~else if (_match 'bit.*|bool|boolean' columnType)}}JDBCType.BOOLEAN
+{{~else if (_match 'decimal.*' columnType)}}JDBCType.DECIMAL
+{{~else if (_match 'float.*' columnType)}}JDBCType.FLOAT
+{{~else if (_match 'datetime' columnType)}}JDBCType.TIMESTAMP
+{{~else if (_match 'date' columnType)}}JDBCType.DATE
+{{~else if (_match 'time' columnType)}}JDBCType.TIME
+{{~else if (_match 'timestamp' columnType)}}JDBCType.TIMESTAMP
+{{~else if (_match 'varbinary' columnType)}}JDBCType.VARBINARY
+{{~else if (_match 'enum.*' columnType)}}JDBCType.VARCHAR
+{{~else}}JDBCType.OTHER
 {{~/if}}

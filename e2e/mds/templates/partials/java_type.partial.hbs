@@ -1,11 +1,11 @@
-{{~#if (_match 'varchar\(\d+\)|char|tinytext|text|mediumtext|longtext' columnType)}}String
-{{~else if (_match 'bigint' columnType)}}Long
-{{~else if (_match 'int|integer|mediumint' columnType)}}Integer
-{{~else if (_match 'smallint' columnType)}}Short
-{{~else if (_match 'tinyint' columnType)}}Byte
-{{~else if (_match 'bit|bool|boolean' columnType)}}Boolean
-{{~else if (_match 'decimal' columnType)}}java.math.BigDecimal
-{{~else if (_match 'float' columnType)}}Double
+{{~#if (_match 'varchar\(\d+\)|char|tinytext|text|mediumtext|longtext|json.*' columnType)}}String
+{{~else if (_match 'bigint.*' columnType)}}Long
+{{~else if (_match 'int.*|integer.*|mediumint.*' columnType)}}Integer
+{{~else if (_match 'smallint.*' columnType)}}Short
+{{~else if (_match 'tinyint.*' columnType)}}Byte
+{{~else if (_match 'bit.*|bool|boolean' columnType)}}Boolean
+{{~else if (_match 'decimal.*' columnType)}}java.math.BigDecimal
+{{~else if (_match 'float.*' columnType)}}Double
 {{~else if (_match 'datetime' columnType)}}java.time.LocalDateTime
 {{~else if (_match 'date' columnType)}}java.time.LocalDate
 {{~else if (_match 'time' columnType)}}java.time.LocalTime

@@ -5,7 +5,8 @@
 package {{properties.entityPkg}};
 
 /**
- * @gencoder.block.start: table
+ * // @gencoder.block.start: table
+ *
  * <p> table: {{table.name}}
  * <p> comment: {{table.comment}}
  * <p> indexes:
@@ -13,12 +14,16 @@ package {{properties.entityPkg}};
  *   <p> {{name}}: ({{#each columns}}{{name}}{{#unless @last}}, {{/unless}}{{/each}})
      {{/each}}
  */
-public record {{_pascalCase table.name}} (
+@lombok.Data
+public final class {{_pascalCase table.name}} {
+
     {{#each table.columns}}
     /**
      * {{comment}}
      */
-    {{> 'java_type.partial.hbs' columnType=type}} {{_camelCase name}}{{#unless @last}},{{/unless}}
+    private {{> 'java_type.partial.hbs' columnType=type}} {{_camelCase name}};
     {{/each}}
+
     // @gencoder.block.end: table
-) {}
+
+}

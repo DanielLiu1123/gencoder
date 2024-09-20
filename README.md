@@ -10,7 +10,7 @@ Applicable scenarios for gencoder:
 ## Install
 
 ```bash
-go install github.com/DanielLiu1123/gencoder/cmd/gencoder
+go install github.com/DanielLiu1123/gencoder/cmd/gencoder@latest
 ```
 
 ## Quick Start
