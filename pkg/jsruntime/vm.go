@@ -48,3 +48,11 @@ func initVM() *goja.Runtime {
 
 	return vm
 }
+
+// RunJS runs JavaScript code
+func RunJS(js string) {
+	_, err := GetVM().RunString(js)
+	if err != nil {
+		log.Fatalf("Error running JS: %v", err)
+	}
+}

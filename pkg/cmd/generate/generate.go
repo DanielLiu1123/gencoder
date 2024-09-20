@@ -2,17 +2,21 @@ package generate
 
 import (
 	"github.com/DanielLiu1123/gencoder/pkg/handlebars"
+	"github.com/DanielLiu1123/gencoder/pkg/jsruntime"
 	"github.com/DanielLiu1123/gencoder/pkg/model"
 	"github.com/DanielLiu1123/gencoder/pkg/util"
 	"github.com/spf13/cobra"
+	"io"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
 type generateOptions struct {
-	config string
+	config       string
+	importHelper string
 }
 
 func NewCmdGenerate(globalOptions *model.GlobalOptions) *cobra.Command {
@@ -23,9 +27,21 @@ func NewCmdGenerate(globalOptions *model.GlobalOptions) *cobra.Command {
 		Use:     "generate",
 		Short:   "Generate code from database configuration",
 		Aliases: []string{"gen", "g"},
+		Example: `  # Generate code from default config file (gencoder.yaml)
+  $ gencoder generate
+
+  # Generate code from a specific config file
+  $ gencoder generate -f myconfig.yaml
+
+  # Generate code with custom import helper JavaScript file
+  $ gencoder generate -f myconfig.yaml --import-helper helpers.js
+`,
 		PreRun: func(cmd *cobra.Command, args []string) {
 			if len(args) > 0 {
 				log.Fatalf("generate command does not accept any arguments")
+			}
+			if opt.importHelper != "" {
+				registerCustomHelpers(opt.importHelper)
 			}
 		},
 		Run: func(cmd *cobra.Command, args []string) {
@@ -34,8 +50,36 @@ func NewCmdGenerate(globalOptions *model.GlobalOptions) *cobra.Command {
 	}
 
 	c.Flags().StringVarP(&opt.config, "config", "f", globalOptions.Config, "Config file to use")
+	c.Flags().StringVarP(&opt.importHelper, "import-helper", "i", "", "Import helper JavaScript file, can be URL ([http|https]://...) or file path")
 
 	return c
+}
+
+func registerCustomHelpers(location string) {
+
+	// URL
+	if strings.HasPrefix(location, "http://") || strings.HasPrefix(location, "https://") {
+		resp, err := http.Get(location)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer resp.Body.Close()
+
+		bytes, err := io.ReadAll(resp.Body)
+		if err != nil {
+			log.Fatal(err)
+		}
+		jsruntime.RunJS(string(bytes))
+
+		return
+	}
+
+	// file path
+	bytes, err := os.ReadFile(location)
+	if err != nil {
+		log.Fatal(err)
+	}
+	jsruntime.RunJS(string(bytes))
 }
 
 func run(_ *cobra.Command, _ []string, opt *generateOptions, _ *model.GlobalOptions) {
