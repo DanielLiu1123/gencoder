@@ -14,6 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 )
 
 // ReadConfig reads the configuration file from the given path
@@ -112,47 +113,59 @@ func collectRenderContextsForDBConfig(dbCfg *model.DatabaseConfig) []*model.Rend
 		}
 	}(conn)
 
+	var mu sync.Mutex
 	contexts := make([]*model.RenderContext, 0)
+	var wg sync.WaitGroup
+
 	for _, tbCfg := range dbCfg.Tables {
-		schema := tbCfg.Schema
-		if schema == "" {
-			schema = dbCfg.Schema
-		}
+		wg.Add(1)
+		go func(tbCfg *model.TableConfig) {
+			defer wg.Done()
 
-		var table *model.Table
-
-		switch driver {
-		case "mysql":
+			schema := tbCfg.Schema
 			if schema == "" {
-				arr := strings.Split(u.Path, "/")
-				if len(arr) > 1 {
-					schema = arr[1]
+				schema = dbCfg.Schema
+			}
+
+			var table *model.Table
+
+			switch driver {
+			case "mysql":
+				if schema == "" {
+					arr := strings.Split(u.Path, "/")
+					if len(arr) > 1 {
+						schema = arr[1]
+					}
 				}
+				table, err = db.GenMySQLTable(context.Background(), conn, schema, tbCfg.Name, tbCfg.IgnoreColumns)
+			case "postgres":
+				if schema == "" {
+					schema = "public"
+				}
+				table, err = db.GenPostgresTable(context.Background(), conn, schema, tbCfg.Name, tbCfg.IgnoreColumns)
+			default:
+				log.Fatalf("unsupported driver: %s", driver)
 			}
-			table, err = db.GenMySQLTable(context.Background(), conn, schema, tbCfg.Name, tbCfg.IgnoreColumns)
-		case "postgres":
-			if schema == "" {
-				schema = "public"
+
+			if err != nil {
+				log.Fatal(err)
 			}
-			table, err = db.GenPostgresTable(context.Background(), conn, schema, tbCfg.Name, tbCfg.IgnoreColumns)
-		default:
-			log.Fatalf("unsupported driver: %s", driver)
-		}
 
-		if err != nil {
-			log.Fatal(err)
-		}
+			// table not found
+			if table == nil {
+				log.Printf("table %s.%s not found, skipping", schema, tbCfg.Name)
+				return
+			}
 
-		// table not found
-		if table == nil {
-			log.Printf("table %s.%s not found, skipping", schema, tbCfg.Name)
-			continue
-		}
+			ctx := createRenderContext(dbCfg, tbCfg, table)
 
-		ctx := createRenderContext(dbCfg, tbCfg, table)
-
-		contexts = append(contexts, ctx)
+			mu.Lock()
+			contexts = append(contexts, ctx)
+			mu.Unlock()
+		}(tbCfg)
 	}
+
+	wg.Wait()
 
 	return contexts
 }

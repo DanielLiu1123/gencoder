@@ -13,6 +13,12 @@ Applicable scenarios for gencoder:
 go install github.com/DanielLiu1123/gencoder/cmd/gencoder@latest
 ```
 
+Build from source:
+
+```bash
+make && CGO_ENABLED=0 go build -o gencoder cmd/gencoder/main.go
+```
+
 ## Quick Start
 
 ```shell
