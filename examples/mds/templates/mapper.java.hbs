@@ -153,6 +153,7 @@ public interface {{_pascalCase table.name}}Mapper extends CommonCountMapper, Com
         );
     }
 
+    @SelectProvider(type=SqlProviderAdapter.class, method="select")
     List<Map<String, Object>> generalSelect(SelectStatementProvider selectStatement);
 
     // @gencoder.block.end: mapper
