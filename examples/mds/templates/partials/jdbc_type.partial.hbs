@@ -1,4 +1,4 @@
-{{~#if (_match 'varchar\(\d+\)|char|tinytext|text|mediumtext|longtext|json.*' columnType)}}JDBCType.VARCHAR
+{{~#if (_match 'varchar\(\d+\)|char|tinytext|text|mediumtext|longtext|json.*|enum.*' columnType)}}JDBCType.VARCHAR
 {{~else if (_match 'bigint.*' columnType)}}JDBCType.BIGINT
 {{~else if (_match 'int.*|integer.*|mediumint.*' columnType)}}JDBCType.INTEGER
 {{~else if (_match 'smallint.*' columnType)}}JDBCType.SMALLINT
@@ -11,6 +11,5 @@
 {{~else if (_match 'time' columnType)}}JDBCType.TIME
 {{~else if (_match 'timestamp' columnType)}}JDBCType.TIMESTAMP
 {{~else if (_match 'varbinary' columnType)}}JDBCType.VARBINARY
-{{~else if (_match 'enum.*' columnType)}}JDBCType.VARCHAR
 {{~else}}JDBCType.OTHER
 {{~/if}}
