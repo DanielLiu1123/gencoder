@@ -13,7 +13,7 @@ import (
 	_ "github.com/sijms/go-ora/v2"
 )
 
-var version = "0.0.2"
+var version = "0.0.3"
 
 func main() {
 
