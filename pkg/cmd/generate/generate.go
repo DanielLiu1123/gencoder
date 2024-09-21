@@ -15,13 +15,16 @@ import (
 )
 
 type generateOptions struct {
-	config       string
-	importHelper string
+	config                string
+	commandLineProperties map[string]string // properties passed from command line
+	importHelper          string
 }
 
 func NewCmdGenerate(globalOptions *model.GlobalOptions) *cobra.Command {
 
 	opt := &generateOptions{}
+
+	var props []string // properties passed from command line
 
 	c := &cobra.Command{
 		Use:     "generate",
@@ -40,6 +43,16 @@ func NewCmdGenerate(globalOptions *model.GlobalOptions) *cobra.Command {
 			if len(args) > 0 {
 				log.Fatalf("generate command does not accept any arguments")
 			}
+
+			opt.commandLineProperties = make(map[string]string)
+			for _, prop := range props {
+				parts := strings.Split(prop, "=")
+				if len(parts) != 2 {
+					log.Fatalf("Invalid property: %s", prop)
+				}
+				opt.commandLineProperties[parts[0]] = parts[1]
+			}
+
 			if opt.importHelper != "" {
 				registerCustomHelpers(opt.importHelper)
 			}
@@ -51,6 +64,7 @@ func NewCmdGenerate(globalOptions *model.GlobalOptions) *cobra.Command {
 
 	c.Flags().StringVarP(&opt.config, "config", "f", globalOptions.Config, "Config file to use")
 	c.Flags().StringVarP(&opt.importHelper, "import-helper", "i", "", "Import helper JavaScript file, can be URL ([http|https]://...) or file path")
+	c.Flags().StringSliceVarP(&props, "properties", "p", []string{}, "Add properties, will override properties in config file, --properties=\"k1=v1\" --properties=\"k2=v2,k3=v3\"")
 
 	return c
 }
@@ -93,10 +107,27 @@ func run(_ *cobra.Command, _ []string, opt *generateOptions, _ *model.GlobalOpti
 
 	registerPartialTemplates(templates)
 
-	renderContexts := util.CollectRenderContexts(cfg)
-	for _, ctx := range renderContexts {
+	renderContexts := util.CollectRenderContexts(cfg, opt.commandLineProperties)
+
+	if len(renderContexts) > 0 {
+		// Generate code for all render contexts
+		for _, ctx := range renderContexts {
+			for _, t := range templates {
+				generate(cfg, t, ctx)
+			}
+		}
+	} else {
+		// No table found, maybe generate from boilerplate
+		properties := make(map[string]string)
+		for k, v := range cfg.Properties {
+			properties[k] = v
+		}
+		for k, v := range opt.commandLineProperties {
+			properties[k] = v
+		}
+		renderContext := &model.RenderContext{Properties: properties, Config: cfg}
 		for _, t := range templates {
-			generate(cfg, t, ctx)
+			generate(cfg, t, renderContext)
 		}
 	}
 }
