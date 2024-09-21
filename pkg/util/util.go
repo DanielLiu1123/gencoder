@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"database/sql"
+	"fmt"
 	"github.com/DanielLiu1123/gencoder/pkg/db"
 	"github.com/DanielLiu1123/gencoder/pkg/handlebars"
 	"github.com/DanielLiu1123/gencoder/pkg/model"
@@ -12,32 +13,82 @@ import (
 	"io/fs"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"sync"
 )
 
 // ReadConfig reads the configuration file from the given path
-func ReadConfig(configPath string) *model.Config {
+func ReadConfig(configPath string) (*model.Config, error) {
+	var cfg model.Config
 	file, err := os.ReadFile(configPath)
 	if err != nil {
-		log.Fatal(err)
+		return &cfg, err
 	}
-
-	var cfg model.Config
 	err = yaml.Unmarshal(file, &cfg)
 	if err != nil {
-		log.Fatal(err)
+		return &cfg, err
 	}
-
-	return &cfg
+	return &cfg, nil
 }
 
-// LoadTemplates loads all templates from the given configuration
-func LoadTemplates(cfg *model.Config) ([]*model.Tpl, error) {
+// LoadTemplates loads all templates from the given configuration and command line templates
+func LoadTemplates(cfg *model.Config, commandLineTemplates string) ([]*model.Tpl, error) {
+
+	template := cfg.GetTemplates()
+	if commandLineTemplates != "" {
+		template = commandLineTemplates
+	}
+
 	var templates []*model.Tpl
 
-	err := filepath.WalkDir(cfg.GetTemplatesDir(), func(path string, d fs.DirEntry, err error) error {
+	// If url is provided, download templates
+	isGitUrl, err := regexp.Match(`^.*(github\.com)/.*`, []byte(template))
+	if err != nil {
+		return nil, err
+	}
+
+	if isGitUrl {
+		// Parse GitHub URL to extract the repo and branch (if provided)
+		re := regexp.MustCompile(`github\.com/([^/]+)/([^/]+)(/tree/([^/]+)/(.*))?`)
+		matches := re.FindStringSubmatch(template)
+		if matches == nil {
+			return nil, fmt.Errorf("invalid GitHub URL format")
+		}
+
+		owner := matches[1]
+		repo := matches[2]
+		branch := "main"
+		if matches[4] != "" {
+			branch = matches[4]
+		}
+		dirInRepo := matches[5]
+
+		tmpDir, err := os.MkdirTemp("", "templates")
+		if err != nil {
+			return nil, fmt.Errorf("failed to create temp dir: %v", err)
+		}
+		defer os.RemoveAll(tmpDir)
+
+		cloneUrl := fmt.Sprintf("https://github.com/%s/%s.git", owner, repo)
+		cmd := exec.Command("git", "clone", "--branch", branch, "--depth", "1", cloneUrl, tmpDir)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		if err := cmd.Run(); err != nil {
+			return nil, fmt.Errorf("failed to clone repository: %v", err)
+		}
+
+		// If a directory within the repo is specified, update the path
+		if dirInRepo != "" {
+			template = filepath.Join(tmpDir, dirInRepo)
+		} else {
+			template = tmpDir
+		}
+	}
+
+	err = filepath.WalkDir(template, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -71,12 +122,20 @@ func LoadTemplates(cfg *model.Config) ([]*model.Tpl, error) {
 }
 
 // CollectRenderContexts collects render contexts for the given database configurations
-func CollectRenderContexts(cfg *model.Config) []*model.RenderContext {
+func CollectRenderContexts(cfg *model.Config, commandLineProperties map[string]string) []*model.RenderContext {
 	renderContexts := make([]*model.RenderContext, 0)
 	for _, dbCfg := range cfg.Databases {
 		contexts := collectRenderContextsForDBConfig(cfg, dbCfg)
 		renderContexts = append(renderContexts, contexts...)
 	}
+
+	// Use command line properties to override properties in config file
+	for _, rc := range renderContexts {
+		for k, v := range commandLineProperties {
+			rc.Properties[k] = v
+		}
+	}
+
 	return renderContexts
 }
 
@@ -172,6 +231,9 @@ func collectRenderContextsForDBConfig(cfg *model.Config, dbCfg *model.DatabaseCo
 
 func createRenderContext(cfg *model.Config, dbCfg *model.DatabaseConfig, tbCfg *model.TableConfig, table *model.Table) *model.RenderContext {
 	properties := make(map[string]string)
+	for k, v := range cfg.Properties {
+		properties[k] = v
+	}
 	for k, v := range dbCfg.Properties {
 		properties[k] = v
 	}
