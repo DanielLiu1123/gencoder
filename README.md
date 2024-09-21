@@ -27,6 +27,8 @@ make && CGO_ENABLED=0 go build -o gencoder cmd/gencoder/main.go
 
 ## Quick Start
 
+[![asciicast](https://asciinema.org/a/zxFUwTClaGiKE0VQRIGc9anP6.svg)](https://asciinema.org/a/zxFUwTClaGiKE0VQRIGc9anP6)
+
 Run a MySQL server:
 
 ```bash
