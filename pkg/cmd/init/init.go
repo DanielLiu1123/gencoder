@@ -84,15 +84,15 @@ public record {{_pascalCase table.name}} (
     {{> 'java_type.partial.hbs' columnType=type}} {{_camelCase name}}{{#unless @last}},{{/unless}}
     {{/each}}
 
-	// NOTE: you can't make changes in the block, it will be overwritten by generating again
+    // NOTE: you can't make changes in the block, it will be overwritten by generating again
 
     // @gencoder.block.end: table
 ) {
-	
-	// TIP: you can make changes outside the block, it will not be overwritten by generating again
-	public void hello() {
-		System.out.println("Hello, World!");
-	}
+
+    // TIP: you can make changes outside the block, it will not be overwritten by generating again
+    public void hello() {
+        System.out.println("Hello, World!");
+    }
 }
 `
 
