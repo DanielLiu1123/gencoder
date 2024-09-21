@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+go mod tidy
+go fmt ./...
+
+git add -u
+
+# run linter
 golangci-lint run
 
 echo 'Linting done!'
