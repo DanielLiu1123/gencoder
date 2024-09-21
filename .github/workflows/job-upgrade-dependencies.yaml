@@ -23,12 +23,16 @@ jobs:
 
           git diff --exit-code go.mod go.sum
           
-          if [ $? -eq 0 ]; then
+          has_changes=$?
+          
+          echo "has_changes=$has_changes" >> $GITHUB_ENV
+          
+          if [ $has_changes -eq 0 ]; then
             echo "No dependencies need to be upgraded"
-            exit 0
           fi
 
       - name: Create Pull Request
+        if: env.has_changes == 1
         uses: peter-evans/create-pull-request@v7
         with:
           commit-message: "Upgrade dependencies"
