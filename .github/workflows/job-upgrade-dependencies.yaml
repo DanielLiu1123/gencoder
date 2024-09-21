@@ -1,0 +1,37 @@
+name: Upgrade Dependencies
+
+on:
+  schedule:
+    - cron: '0 11 * * *'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  upgrade-dependencies:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Upgrade Dependencies
+        run: |
+          go get -u -v ./...
+          go mod tidy
+
+          git diff --exit-code go.mod go.sum
+          
+          if [ $? -eq 0 ]; then
+            echo "No dependencies need to be upgraded"
+            exit 1
+          fi
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "Upgrade dependencies"
+          title: "Upgrade dependencies"
+          body: ""
+          branch: "upgrade-dependencies"
