@@ -1,0 +1,35 @@
+---
+sidebar_position: 10
+---
+
+# Init
+
+`init` command is used to initialize basic configuration for using gencoder.
+
+```bash
+gencoder init
+```
+
+This command will create a `genconfig.yaml` file and templates dir in the current directory.
+
+## Configuration
+
+`genconfig.yaml` file is used to define the configuration for generating code.
+
+```yaml
+templatesDir: templates # Directory where templates are stored
+databases:
+  - dsn: 'mysql://root:root@localhost:3306/testdb' # Database connection
+    tables:
+      - name: 'user'  # Using table metadata to render templates
+        properties:
+          package: 'com.example'
+```
+
+:::tip
+gencoder uses [xo/dburl](https://github.com/xo/dburl) to provides a uniform way to parse database connections.
+:::
+
+## Templates
+
+gencoder uses [Handlebars](https://handlebarsjs.com/) as template engine.
