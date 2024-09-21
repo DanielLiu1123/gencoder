@@ -1,0 +1,38 @@
+---
+sidebar_position: 10
+---
+
+# Quick Start
+
+This guide will help you get started with Gencoder quickly.
+
+Install:
+
+```bash
+go install github.com/DanielLiu1123/gencoder/cmd/gencoder@latest
+```
+
+Run a MySQL server:
+
+```bash
+docker rm -f test_mysql && docker run --name test_mysql -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=testdb -p 3306:3306 -p 33060:33060 -id mysql:latest && sleep 10 && docker exec -i test_mysql mysql -uroot -proot -e "\
+    CREATE TABLE testdb.user ( \
+        id INT AUTO_INCREMENT PRIMARY KEY, \
+        username VARCHAR(64) NOT NULL COMMENT 'Username, required', \
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp' \
+    ) COMMENT='User account information';"
+```
+
+Init basic configuration:
+
+```bash
+gencoder init
+```
+
+Generate code:
+
+```bash
+gencoder generate
+```
+
+
