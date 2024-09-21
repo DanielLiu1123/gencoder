@@ -27,7 +27,7 @@ jobs:
           
           echo "has_changes=$has_changes" >> $GITHUB_ENV
           
-          if [ $has_changes -eq 0 ]; then
+          if [[ $has_changes -eq 0 ]]; then
             echo "No dependencies need to be upgraded"
           fi
 
