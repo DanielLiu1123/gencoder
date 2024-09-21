@@ -1,17 +1,17 @@
 # Gencoder
 
-A code generator for any language or framework, based on [Handlebars](https://handlebarsjs.com/).
+A code generator for any language or framework that preserves your custom changes during regeneration, powered by [Handlebars](https://handlebarsjs.com/).
 
 ## Background
 
-When generating code, you cannot add custom code, because it will be overwritten the next time you generate code. In
-real world, code generators usually help to create some boilerplate code (like CRUD operations), and then you may
-modify the generated code. However, when you regenerate the code, your changes will be overwritten, and you have to
-merge the code manually (which is really annoying).
+You cannot add code to the generated code because it will be overwritten the next time you generate it.
+In real world, code generators are often used to create some boilerplate code (like CRUD operations),
+then you develop your own code based on it. However, when you regenerate the code, your changes will be overwritten,
+and you have to merge them manually (which is very annoying).
 
-Gencoder is designed to solve this problem. It allows the code generator to recognize which parts of the file are
-automatically generated and which parts are added manually. When regenerating the code, only the generated parts will be
-overwritten, and the manual changes will remain untouched. No need for manual merging anymore.
+Gencoder is designed to solve this problem. It can recognize which parts of the file are generated
+and which parts are manually added. When regenerating, it only overwrites the automatically generated parts,
+and the manual parts remain unchanged. No more manual merging.
 
 ## Install
 
