@@ -1,7 +1,7 @@
 package model
 
 type Config struct {
-	TemplatesDir string            `json:"templatesDir" yaml:"templatesDir"`
+	Templates    string            `json:"templates" yaml:"templates"` // Can be a directory or URL
 	OutputMarker string            `json:"outputMarker" yaml:"outputMarker"`
 	BlockMarker  BlockMarker       `json:"blockMarker" yaml:"blockMarker"`
 	Databases    []*DatabaseConfig `json:"databases" yaml:"databases"`
@@ -28,11 +28,11 @@ type BlockMarker struct {
 	End   string `json:"end" yaml:"end"`
 }
 
-func (c Config) GetTemplatesDir() string {
-	if c.TemplatesDir == "" {
+func (c Config) GetTemplates() string {
+	if c.Templates == "" {
 		return "templates"
 	}
-	return c.TemplatesDir
+	return c.Templates
 }
 
 func (c Config) GetOutputMarker() string {
