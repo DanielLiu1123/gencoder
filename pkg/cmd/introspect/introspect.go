@@ -53,7 +53,10 @@ func NewCmdIntrospect(globalOptions *model.GlobalOptions) *cobra.Command {
 func run(_ *cobra.Command, _ []string, opt *introspectOptions, _ *model.GlobalOptions) {
 
 	renderContextsFunc := sync.OnceValue(func() []*model.RenderContext {
-		cfg := util.ReadConfig(opt.config)
+		cfg, err := util.ReadConfig(opt.config)
+		if err != nil {
+			log.Fatalf("failed to read config: %v", err)
+		}
 		return util.CollectRenderContexts(cfg, nil)
 	})
 

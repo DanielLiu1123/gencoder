@@ -32,7 +32,7 @@ func NewCmdInit(globalOptions *model.GlobalOptions) *cobra.Command {
 func run(_ *cobra.Command, _ []string, _ *initOptions, _ *model.GlobalOptions) {
 
 	// init gencoder.yaml
-	gencoderYaml := `templatesDir: templates
+	gencoderYaml := `templates: templates
 databases:
   - dsn: 'mysql://root:root@localhost:3306/testdb'
     tables:

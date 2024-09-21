@@ -1,6 +1,7 @@
 package generate
 
 import (
+	"errors"
 	"github.com/DanielLiu1123/gencoder/pkg/handlebars"
 	"github.com/DanielLiu1123/gencoder/pkg/jsruntime"
 	"github.com/DanielLiu1123/gencoder/pkg/model"
@@ -16,8 +17,9 @@ import (
 
 type generateOptions struct {
 	config                string
-	commandLineProperties map[string]string // properties passed from command line
 	importHelper          string
+	commandLineProperties map[string]string // properties passed from command line
+	commandLineTemplates  string            // templates passed from command line
 }
 
 func NewCmdGenerate(globalOptions *model.GlobalOptions) *cobra.Command {
@@ -38,6 +40,9 @@ func NewCmdGenerate(globalOptions *model.GlobalOptions) *cobra.Command {
 
   # Generate code with custom import helper JavaScript file
   $ gencoder generate -f myconfig.yaml --import-helper helpers.js
+
+  # Generate boilerplate code from URL with custom properties
+  $ gencoder generate --templates "https://github.com/DanielLiu1123/gencoder/tree/main/templates" --properties="package=com.example,author=Freeman"
 `,
 		PreRun: func(cmd *cobra.Command, args []string) {
 			if len(args) > 0 {
@@ -65,6 +70,7 @@ func NewCmdGenerate(globalOptions *model.GlobalOptions) *cobra.Command {
 	c.Flags().StringVarP(&opt.config, "config", "f", globalOptions.Config, "Config file to use")
 	c.Flags().StringVarP(&opt.importHelper, "import-helper", "i", "", "Import helper JavaScript file, can be URL ([http|https]://...) or file path")
 	c.Flags().StringSliceVarP(&props, "properties", "p", []string{}, "Add properties, will override properties in config file, --properties=\"k1=v1\" --properties=\"k2=v2,k3=v3\"")
+	c.Flags().StringVarP(&opt.commandLineTemplates, "templates", "t", "", "Override templates directory or URL")
 
 	return c
 }
@@ -98,9 +104,18 @@ func registerCustomHelpers(location string) {
 
 func run(_ *cobra.Command, _ []string, opt *generateOptions, _ *model.GlobalOptions) {
 
-	cfg := util.ReadConfig(opt.config)
+	cfg, err := util.ReadConfig(opt.config)
+	isNotExist := errors.Is(err, os.ErrNotExist)
+	if isNotExist {
+		// if is not found, try to read from command line templates
+		if opt.commandLineTemplates == "" {
+			log.Fatal(err)
+		}
+	} else {
+		log.Fatal(err)
+	}
 
-	templates, err := util.LoadTemplates(cfg)
+	templates, err := util.LoadTemplates(cfg, opt.commandLineTemplates)
 	if err != nil {
 		log.Fatal(err)
 	}
