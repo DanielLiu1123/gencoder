@@ -105,13 +105,8 @@ func registerCustomHelpers(location string) {
 func run(_ *cobra.Command, _ []string, opt *generateOptions, _ *model.GlobalOptions) {
 
 	cfg, err := util.ReadConfig(opt.config)
-	isNotExist := errors.Is(err, os.ErrNotExist)
-	if isNotExist {
+	if (err != nil && !errors.Is(err, os.ErrNotExist)) || (errors.Is(err, os.ErrNotExist) && opt.commandLineTemplates == "") {
 		// if is not found, try to read from command line templates
-		if opt.commandLineTemplates == "" {
-			log.Fatal(err)
-		}
-	} else {
 		log.Fatal(err)
 	}
 
