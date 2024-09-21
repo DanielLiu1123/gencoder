@@ -93,7 +93,7 @@ func run(_ *cobra.Command, _ []string, opt *generateOptions, _ *model.GlobalOpti
 
 	registerPartialTemplates(templates)
 
-	renderContexts := util.CollectRenderContexts(cfg.Databases...)
+	renderContexts := util.CollectRenderContexts(cfg)
 	for _, ctx := range renderContexts {
 		for _, t := range templates {
 			generate(cfg, t, ctx)

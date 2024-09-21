@@ -54,7 +54,7 @@ func run(_ *cobra.Command, _ []string, opt *introspectOptions, _ *model.GlobalOp
 
 	renderContextsFunc := sync.OnceValue(func() []*model.RenderContext {
 		cfg := util.ReadConfig(opt.config)
-		return util.CollectRenderContexts(cfg.Databases...)
+		return util.CollectRenderContexts(cfg)
 	})
 
 	switch opt.output {

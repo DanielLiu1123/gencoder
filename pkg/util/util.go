@@ -71,10 +71,10 @@ func LoadTemplates(cfg *model.Config) ([]*model.Tpl, error) {
 }
 
 // CollectRenderContexts collects render contexts for the given database configurations
-func CollectRenderContexts(dbConfigs ...*model.DatabaseConfig) []*model.RenderContext {
+func CollectRenderContexts(cfg *model.Config) []*model.RenderContext {
 	renderContexts := make([]*model.RenderContext, 0)
-	for _, dbCfg := range dbConfigs {
-		contexts := collectRenderContextsForDBConfig(dbCfg)
+	for _, dbCfg := range cfg.Databases {
+		contexts := collectRenderContextsForDBConfig(cfg, dbCfg)
 		renderContexts = append(renderContexts, contexts...)
 	}
 	return renderContexts
@@ -93,7 +93,7 @@ func getFileNameTemplate(content string, cfg *model.Config) string {
 	return ""
 }
 
-func collectRenderContextsForDBConfig(dbCfg *model.DatabaseConfig) []*model.RenderContext {
+func collectRenderContextsForDBConfig(cfg *model.Config, dbCfg *model.DatabaseConfig) []*model.RenderContext {
 
 	u, err := dburl.Parse(dbCfg.Dsn)
 	if err != nil {
@@ -157,7 +157,7 @@ func collectRenderContextsForDBConfig(dbCfg *model.DatabaseConfig) []*model.Rend
 				return
 			}
 
-			ctx := createRenderContext(dbCfg, tbCfg, table)
+			ctx := createRenderContext(cfg, dbCfg, tbCfg, table)
 
 			mu.Lock()
 			contexts = append(contexts, ctx)
@@ -170,7 +170,7 @@ func collectRenderContextsForDBConfig(dbCfg *model.DatabaseConfig) []*model.Rend
 	return contexts
 }
 
-func createRenderContext(dbCfg *model.DatabaseConfig, tbCfg *model.TableConfig, table *model.Table) *model.RenderContext {
+func createRenderContext(cfg *model.Config, dbCfg *model.DatabaseConfig, tbCfg *model.TableConfig, table *model.Table) *model.RenderContext {
 	properties := make(map[string]string)
 	for k, v := range dbCfg.Properties {
 		properties[k] = v
@@ -180,7 +180,10 @@ func createRenderContext(dbCfg *model.DatabaseConfig, tbCfg *model.TableConfig, 
 	}
 
 	return &model.RenderContext{
-		Table:      table,
-		Properties: properties,
+		Table:          table,
+		Properties:     properties,
+		Config:         cfg,
+		DatabaseConfig: dbCfg,
+		TableConfig:    tbCfg,
 	}
 }
