@@ -25,7 +25,7 @@ jobs:
           
           if [ $? -eq 0 ]; then
             echo "No dependencies need to be upgraded"
-            exit 1
+            exit 0
           fi
 
       - name: Create Pull Request
