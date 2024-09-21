@@ -71,12 +71,20 @@ func LoadTemplates(cfg *model.Config) ([]*model.Tpl, error) {
 }
 
 // CollectRenderContexts collects render contexts for the given database configurations
-func CollectRenderContexts(cfg *model.Config) []*model.RenderContext {
+func CollectRenderContexts(cfg *model.Config, commandLineProperties map[string]string) []*model.RenderContext {
 	renderContexts := make([]*model.RenderContext, 0)
 	for _, dbCfg := range cfg.Databases {
 		contexts := collectRenderContextsForDBConfig(cfg, dbCfg)
 		renderContexts = append(renderContexts, contexts...)
 	}
+
+	// Use command line properties to override properties in config file
+	for _, rc := range renderContexts {
+		for k, v := range commandLineProperties {
+			rc.Properties[k] = v
+		}
+	}
+
 	return renderContexts
 }
 
@@ -172,6 +180,9 @@ func collectRenderContextsForDBConfig(cfg *model.Config, dbCfg *model.DatabaseCo
 
 func createRenderContext(cfg *model.Config, dbCfg *model.DatabaseConfig, tbCfg *model.TableConfig, table *model.Table) *model.RenderContext {
 	properties := make(map[string]string)
+	for k, v := range cfg.Properties {
+		properties[k] = v
+	}
 	for k, v := range dbCfg.Properties {
 		properties[k] = v
 	}
