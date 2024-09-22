@@ -1,37 +1,42 @@
 package init
 
 import (
-	"github.com/DanielLiu1123/gencoder/pkg/model"
-	"github.com/spf13/cobra"
 	"log"
 	"os"
+	"path/filepath"
+
+	"github.com/DanielLiu1123/gencoder/pkg/model"
+	"github.com/spf13/cobra"
 )
 
 type initOptions struct {
 }
 
 func NewCmdInit(globalOptions *model.GlobalOptions) *cobra.Command {
-
 	opt := &initOptions{}
 
-	c := &cobra.Command{
+	return &cobra.Command{
 		Use:   "init",
 		Short: "Init basic configuration for gencoder",
 		Example: `  # Init basic configuration for gencoder
   $ gencoder init`,
-		PreRun: func(cmd *cobra.Command, args []string) {
-		},
 		Run: func(cmd *cobra.Command, args []string) {
 			run(cmd, args, opt, globalOptions)
 		},
 	}
-
-	return c
 }
 
 func run(_ *cobra.Command, _ []string, _ *initOptions, _ *model.GlobalOptions) {
+	initGencoderYaml()
+	initTemplatesDir()
+	initTemplates()
 
-	// init gencoder.yaml
+	log.Println("Init success! Please modify the gencoder.yaml and templates to fit your project needs.")
+	log.Println()
+	log.Println("Thank you for using gencoder!")
+}
+
+func initGencoderYaml() {
 	gencoderYaml := `templates: templates
 databases:
   - dsn: 'mysql://root:root@localhost:3306/testdb'
@@ -40,24 +45,19 @@ databases:
         properties:
           package: 'com.example'
 `
+	writeFileIfNotExists("gencoder.yaml", []byte(gencoderYaml))
+}
 
-	// init gencoder.yaml
-	if _, err := os.Stat("gencoder.yaml"); err != nil {
-		err := os.WriteFile("gencoder.yaml", []byte(gencoderYaml), 0644)
+func initTemplatesDir() {
+	if _, err := os.Stat("templates"); os.IsNotExist(err) {
+		err := os.Mkdir("templates", 0755)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
+}
 
-	// init templates dir
-	if _, err := os.Stat("templates"); err != nil {
-		err = os.Mkdir("templates", 0755)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	// init templates
+func initTemplates() {
 	entityJava := `/**
  * @gencoder.generated: src/main/java/{{_replaceAll properties.package '.' '/'}}/{{_pascalCase table.name}}.java
  */
@@ -92,13 +92,7 @@ public record {{_pascalCase table.name}} (
     }
 }
 `
-
-	if _, err := os.Stat("templates/entity.java.hbs"); err != nil {
-		err = os.WriteFile("templates/entity.java.hbs", []byte(entityJava), 0644)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
+	writeFileIfNotExists(filepath.Join("templates", "entity.java.hbs"), []byte(entityJava))
 
 	javaTypePartial := `{{~#if (_match 'varchar\(\d+\)|char|tinytext|text|mediumtext|longtext' columnType)}}String
 {{~else if (_match 'bigint' columnType)}}Long
@@ -116,15 +110,14 @@ public record {{_pascalCase table.name}} (
 {{~else if (_match 'enum.*' columnType)}}String
 {{~else}}Object
 {{~/if}}`
+	writeFileIfNotExists(filepath.Join("templates", "java_type.partial.hbs"), []byte(javaTypePartial))
+}
 
-	if _, err := os.Stat("templates/java_type.partial.hbs"); err != nil {
-		err = os.WriteFile("templates/java_type.partial.hbs", []byte(javaTypePartial), 0644)
+func writeFileIfNotExists(filename string, data []byte) {
+	if _, err := os.Stat(filename); os.IsNotExist(err) {
+		err := os.WriteFile(filename, data, 0644)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
-
-	log.Println("Init success! Please modify the gencoder.yaml and templates to fit your project needs.")
-	log.Println()
-	log.Println("Thank you for using gencoder!")
 }

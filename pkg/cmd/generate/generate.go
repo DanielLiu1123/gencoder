@@ -2,31 +2,30 @@ package generate
 
 import (
 	"errors"
-	"github.com/DanielLiu1123/gencoder/pkg/handlebars"
-	"github.com/DanielLiu1123/gencoder/pkg/jsruntime"
-	"github.com/DanielLiu1123/gencoder/pkg/model"
-	"github.com/DanielLiu1123/gencoder/pkg/util"
-	"github.com/spf13/cobra"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/DanielLiu1123/gencoder/pkg/handlebars"
+	"github.com/DanielLiu1123/gencoder/pkg/jsruntime"
+	"github.com/DanielLiu1123/gencoder/pkg/model"
+	"github.com/DanielLiu1123/gencoder/pkg/util"
+	"github.com/spf13/cobra"
 )
 
 type generateOptions struct {
 	config                string
 	importHelper          string
-	commandLineProperties map[string]string // properties passed from command line
-	commandLineTemplates  string            // templates passed from command line
+	commandLineProperties map[string]string
+	commandLineTemplates  string
 }
 
 func NewCmdGenerate(globalOptions *model.GlobalOptions) *cobra.Command {
-
 	opt := &generateOptions{}
-
-	var props []string // properties passed from command line
+	var props []string
 
 	c := &cobra.Command{
 		Use:     "generate",
@@ -45,19 +44,8 @@ func NewCmdGenerate(globalOptions *model.GlobalOptions) *cobra.Command {
   $ gencoder generate --templates "https://github.com/DanielLiu1123/gencoder/tree/main/templates" --properties="package=com.example,author=Freeman"
 `,
 		PreRun: func(cmd *cobra.Command, args []string) {
-			if len(args) > 0 {
-				log.Fatalf("generate command does not accept any arguments")
-			}
-
-			opt.commandLineProperties = make(map[string]string)
-			for _, prop := range props {
-				parts := strings.Split(prop, "=")
-				if len(parts) != 2 {
-					log.Fatalf("Invalid property: %s", prop)
-				}
-				opt.commandLineProperties[parts[0]] = parts[1]
-			}
-
+			validateArgs(args)
+			opt.commandLineProperties = parseProperties(props)
 			if opt.importHelper != "" {
 				registerCustomHelpers(opt.importHelper)
 			}
@@ -75,38 +63,61 @@ func NewCmdGenerate(globalOptions *model.GlobalOptions) *cobra.Command {
 	return c
 }
 
-func registerCustomHelpers(location string) {
-
-	// URL
-	if strings.HasPrefix(location, "http://") || strings.HasPrefix(location, "https://") {
-		resp, err := http.Get(location)
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer resp.Body.Close()
-
-		bytes, err := io.ReadAll(resp.Body)
-		if err != nil {
-			log.Fatal(err)
-		}
-		jsruntime.RunJS(string(bytes))
-
-		return
+func validateArgs(args []string) {
+	if len(args) > 0 {
+		log.Fatalf("generate command does not accept any arguments")
 	}
+}
 
-	// file path
-	bytes, err := os.ReadFile(location)
+func parseProperties(props []string) map[string]string {
+	properties := make(map[string]string)
+	for _, prop := range props {
+		parts := strings.Split(prop, "=")
+		if len(parts) != 2 {
+			log.Fatalf("Invalid property: %s", prop)
+		}
+		properties[parts[0]] = parts[1]
+	}
+	return properties
+}
+
+func registerCustomHelpers(location string) {
+	content := fetchHelperContent(location)
+	jsruntime.RunJS(content)
+}
+
+func fetchHelperContent(location string) string {
+	if strings.HasPrefix(location, "http://") || strings.HasPrefix(location, "https://") {
+		return fetchFromURL(location)
+	}
+	return fetchFromFile(location)
+}
+
+func fetchFromURL(url string) string {
+	resp, err := http.Get(url)
 	if err != nil {
 		log.Fatal(err)
 	}
-	jsruntime.RunJS(string(bytes))
+	defer resp.Body.Close()
+
+	bytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return string(bytes)
+}
+
+func fetchFromFile(path string) string {
+	bytes, err := os.ReadFile(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return string(bytes)
 }
 
 func run(_ *cobra.Command, _ []string, opt *generateOptions, _ *model.GlobalOptions) {
-
-	cfg, err := util.ReadConfig(opt.config)
-	if (err != nil && !errors.Is(err, os.ErrNotExist)) || (errors.Is(err, os.ErrNotExist) && opt.commandLineTemplates == "") {
-		// if is not found, try to read from command line templates
+	cfg, err := loadConfig(opt)
+	if err != nil {
 		log.Fatal(err)
 	}
 
@@ -120,26 +131,18 @@ func run(_ *cobra.Command, _ []string, opt *generateOptions, _ *model.GlobalOpti
 	renderContexts := util.CollectRenderContexts(cfg, opt.commandLineProperties)
 
 	if len(renderContexts) > 0 {
-		// Generate code for all render contexts
-		for _, ctx := range renderContexts {
-			for _, t := range templates {
-				generate(cfg, t, ctx)
-			}
-		}
+		generateForAllContexts(cfg, templates, renderContexts)
 	} else {
-		// No table found, maybe generate from boilerplate
-		properties := make(map[string]string)
-		for k, v := range cfg.Properties {
-			properties[k] = v
-		}
-		for k, v := range opt.commandLineProperties {
-			properties[k] = v
-		}
-		renderContext := &model.RenderContext{Properties: properties, Config: cfg}
-		for _, t := range templates {
-			generate(cfg, t, renderContext)
-		}
+		generateFromBoilerplate(cfg, templates, opt.commandLineProperties)
 	}
+}
+
+func loadConfig(opt *generateOptions) (*model.Config, error) {
+	cfg, err := util.ReadConfig(opt.config)
+	if (err != nil && !errors.Is(err, os.ErrNotExist)) || (errors.Is(err, os.ErrNotExist) && opt.commandLineTemplates == "") {
+		return nil, err
+	}
+	return cfg, nil
 }
 
 func registerPartialTemplates(templates []*model.Tpl) {
@@ -150,36 +153,60 @@ func registerPartialTemplates(templates []*model.Tpl) {
 	}
 }
 
-func generate(cfg *model.Config, tpl *model.Tpl, ctx *model.RenderContext) {
+func generateForAllContexts(cfg *model.Config, templates []*model.Tpl, renderContexts []*model.RenderContext) {
+	for _, ctx := range renderContexts {
+		for _, t := range templates {
+			generate(cfg, t, ctx)
+		}
+	}
+}
 
-	// Skip partial templates
-	if tpl.GeneratedFileName == "" {
+func generateFromBoilerplate(cfg *model.Config, templates []*model.Tpl, commandLineProperties map[string]string) {
+	properties := mergeProperties(cfg.Properties, commandLineProperties)
+	renderContext := &model.RenderContext{Properties: properties, Config: cfg}
+	for _, t := range templates {
+		generate(cfg, t, renderContext)
+	}
+}
+
+func mergeProperties(configProps map[string]string, cmdLineProps map[string]string) map[string]string {
+	merged := make(map[string]string)
+	for k, v := range configProps {
+		merged[k] = v
+	}
+	for k, v := range cmdLineProps {
+		merged[k] = v
+	}
+	return merged
+}
+
+func generate(cfg *model.Config, tpl *model.Tpl, ctx *model.RenderContext) {
+	if tpl.GeneratedFileName == "" { // partial template
 		return
 	}
 
 	context := util.ToMap(ctx)
-
 	newContent := handlebars.Render(tpl.Template, context)
-
 	fileName := getFileName(tpl.GeneratedFileName, context)
 
 	if _, err := os.Stat(fileName); err == nil {
-
-		oldContent, err := os.ReadFile(fileName)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		realContent := replaceBlocks(cfg, string(oldContent), newContent)
-		writeFile(fileName, realContent)
-
+		updateExistingFile(cfg, fileName, newContent)
 	} else {
-
-		createFile(fileName, newContent)
+		createNewFile(fileName, newContent)
 	}
 }
 
-func createFile(fileName, content string) {
+func updateExistingFile(cfg *model.Config, fileName, newContent string) {
+	oldContent, err := os.ReadFile(fileName)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	realContent := replaceBlocks(cfg, string(oldContent), newContent)
+	writeFile(fileName, realContent)
+}
+
+func createNewFile(fileName, content string) {
 	dir := filepath.Dir(fileName)
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		log.Fatal(err)
@@ -198,7 +225,6 @@ func getFileName(filenameTpl string, ctx map[string]interface{}) string {
 	return handlebars.Render(tpl, ctx)
 }
 
-// Thanks to ChatGPT :)
 func replaceBlocks(cfg *model.Config, oldContent, newContent string) string {
 	newBlocks := parseBlocks(cfg, newContent)
 	var realContent strings.Builder
@@ -211,22 +237,13 @@ func replaceBlocks(cfg *model.Config, oldContent, newContent string) string {
 		trimmed := strings.TrimSpace(line)
 		if strings.Contains(trimmed, cfg.BlockMarker.GetStart()) {
 			if currentBlockID != "" {
-				if newBlock, exists := newBlocks[currentBlockID]; exists {
-					realContent.WriteString(newBlock + "\n")
-				} else {
-					realContent.WriteString(strings.TrimRight(currentBlock.String(), "\n") + "\n")
-				}
-				currentBlock.Reset()
+				writeBlock(&realContent, newBlocks, currentBlockID, &currentBlock)
 			}
-			currentBlockID = strings.TrimSpace(trimmed[strings.Index(trimmed, cfg.BlockMarker.GetStart())+len(cfg.BlockMarker.GetStart()):])
+			currentBlockID = extractBlockID(trimmed, cfg.BlockMarker.GetStart())
 			currentBlock.WriteString(line + "\n")
 		} else if strings.Contains(trimmed, cfg.BlockMarker.GetEnd()) && currentBlockID != "" {
 			currentBlock.WriteString(line + "\n")
-			if newBlock, exists := newBlocks[currentBlockID]; exists {
-				realContent.WriteString(newBlock + "\n")
-			} else {
-				realContent.WriteString(strings.TrimRight(currentBlock.String(), "\n") + "\n")
-			}
+			writeBlock(&realContent, newBlocks, currentBlockID, &currentBlock)
 			currentBlockID = ""
 			currentBlock.Reset()
 		} else if currentBlockID != "" {
@@ -237,14 +254,22 @@ func replaceBlocks(cfg *model.Config, oldContent, newContent string) string {
 	}
 
 	if currentBlockID != "" {
-		if newBlock, exists := newBlocks[currentBlockID]; exists {
-			realContent.WriteString(newBlock + "\n")
-		} else {
-			realContent.WriteString(strings.TrimRight(currentBlock.String(), "\n") + "\n")
-		}
+		writeBlock(&realContent, newBlocks, currentBlockID, &currentBlock)
 	}
 
 	return strings.TrimRight(realContent.String(), "\n")
+}
+
+func writeBlock(realContent *strings.Builder, newBlocks map[string]string, blockID string, currentBlock *strings.Builder) {
+	if newBlock, exists := newBlocks[blockID]; exists {
+		realContent.WriteString(newBlock + "\n")
+	} else {
+		realContent.WriteString(strings.TrimRight(currentBlock.String(), "\n") + "\n")
+	}
+}
+
+func extractBlockID(line, marker string) string {
+	return strings.TrimSpace(line[strings.Index(line, marker)+len(marker):])
 }
 
 func parseBlocks(cfg *model.Config, content string) map[string]string {
@@ -260,7 +285,7 @@ func parseBlocks(cfg *model.Config, content string) map[string]string {
 				blocks[currentBlockID] = strings.TrimRight(currentBlock.String(), "\n")
 				currentBlock.Reset()
 			}
-			currentBlockID = strings.TrimSpace(strings.SplitN(trimmed, cfg.BlockMarker.GetStart(), 2)[1])
+			currentBlockID = extractBlockID(trimmed, cfg.BlockMarker.GetStart())
 			currentBlock.WriteString(line + "\n")
 		} else if strings.Contains(trimmed, cfg.BlockMarker.GetEnd()) && currentBlockID != "" {
 			currentBlock.WriteString(line + "\n")
