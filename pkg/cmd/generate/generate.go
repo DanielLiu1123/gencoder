@@ -249,7 +249,7 @@ func replaceBlocks(cfg *model.Config, oldContent, newContent string) string {
 		} else if currentBlockID != "" {
 			currentBlock.WriteString(line + "\n")
 		} else {
-			realContent.WriteString(strings.TrimRight(line, "\n") + "\n")
+			realContent.WriteString(line + "\n")
 		}
 	}
 
@@ -257,14 +257,14 @@ func replaceBlocks(cfg *model.Config, oldContent, newContent string) string {
 		writeBlock(&realContent, newBlocks, currentBlockID, &currentBlock)
 	}
 
-	return strings.TrimRight(realContent.String(), "\n")
+	return strings.TrimSuffix(realContent.String(), "\n")
 }
 
 func writeBlock(realContent *strings.Builder, newBlocks map[string]string, blockID string, currentBlock *strings.Builder) {
 	if newBlock, exists := newBlocks[blockID]; exists {
 		realContent.WriteString(newBlock + "\n")
 	} else {
-		realContent.WriteString(strings.TrimRight(currentBlock.String(), "\n") + "\n")
+		realContent.WriteString(strings.TrimSuffix(currentBlock.String(), "\n") + "\n")
 	}
 }
 
@@ -282,14 +282,14 @@ func parseBlocks(cfg *model.Config, content string) map[string]string {
 		trimmed := strings.TrimSpace(line)
 		if strings.Contains(trimmed, cfg.BlockMarker.GetStart()) {
 			if currentBlockID != "" {
-				blocks[currentBlockID] = strings.TrimRight(currentBlock.String(), "\n")
+				blocks[currentBlockID] = strings.TrimSuffix(currentBlock.String(), "\n")
 				currentBlock.Reset()
 			}
 			currentBlockID = extractBlockID(trimmed, cfg.BlockMarker.GetStart())
 			currentBlock.WriteString(line + "\n")
 		} else if strings.Contains(trimmed, cfg.BlockMarker.GetEnd()) && currentBlockID != "" {
 			currentBlock.WriteString(line + "\n")
-			blocks[currentBlockID] = strings.TrimRight(currentBlock.String(), "\n")
+			blocks[currentBlockID] = strings.TrimSuffix(currentBlock.String(), "\n")
 			currentBlockID = ""
 			currentBlock.Reset()
 		} else if currentBlockID != "" {
@@ -298,7 +298,7 @@ func parseBlocks(cfg *model.Config, content string) map[string]string {
 	}
 
 	if currentBlockID != "" {
-		blocks[currentBlockID] = strings.TrimRight(currentBlock.String(), "\n")
+		blocks[currentBlockID] = strings.TrimSuffix(currentBlock.String(), "\n")
 	}
 
 	return blocks
