@@ -4,91 +4,105 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"github.com/DanielLiu1123/gencoder/pkg/model"
 	"slices"
 	"sort"
+
+	"github.com/DanielLiu1123/gencoder/pkg/model"
 )
 
 // GenMySQLTable generates a MySQL table and fills the Table structure.
 func GenMySQLTable(ctx context.Context, db *sql.DB, schema, table string, ignoreColumns []string) (*model.Table, error) {
-	// Table info
+	t, err := getMySQLTableInfo(ctx, db, schema, table)
+	if err != nil {
+		return nil, err
+	}
+	if t == nil {
+		return nil, nil
+	}
+
+	columns, err := getMySQLColumnsInfo(ctx, db, schema, table, ignoreColumns)
+	if err != nil {
+		return nil, err
+	}
+	t.Columns = columns
+
+	indexes, err := getMySQLIndexesInfo(ctx, db, schema, table)
+	if err != nil {
+		return nil, err
+	}
+	t.Indexes = indexes
+
+	return t, nil
+}
+
+func getMySQLTableInfo(ctx context.Context, db *sql.DB, schema, table string) (*model.Table, error) {
 	const tableSql = `
-select table_schema,
-       table_name,
-       table_comment
-from information_schema.tables
-where table_schema = ?
-  and table_name = ?;
-`
-	tableRow := db.QueryRowContext(ctx, tableSql, schema, table)
+		select table_schema, table_name, table_comment
+		from information_schema.tables
+		where table_schema = ? and table_name = ?;
+	`
 	var t model.Table
-	if err := tableRow.Scan(&t.Schema, &t.Name, &t.Comment); err != nil {
+	err := db.QueryRowContext(ctx, tableSql, schema, table).Scan(&t.Schema, &t.Name, &t.Comment)
+	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, err
 	}
+	return &t, nil
+}
 
-	// Columns info
+func getMySQLColumnsInfo(ctx context.Context, db *sql.DB, schema, table string, ignoreColumns []string) ([]*model.Column, error) {
 	const columnsSql = `
-select ordinal_position,
-       column_name,
-       column_type,
-       is_nullable = 'YES' as is_nullable,
-       column_default,
-       column_key = 'PRI' as is_primary_key,
-       column_comment
-from information_schema.columns
-where table_schema = ?
-  and table_name = ?
-order by ordinal_position;
-`
-	columnRows, err := db.QueryContext(ctx, columnsSql, schema, table)
+		select ordinal_position, column_name, column_type,
+			   is_nullable = 'YES' as is_nullable,
+			   column_default, column_key = 'PRI' as is_primary_key,
+			   column_comment
+		from information_schema.columns
+		where table_schema = ? and table_name = ?
+		order by ordinal_position;
+	`
+	rows, err := db.QueryContext(ctx, columnsSql, schema, table)
 	if err != nil {
 		return nil, err
 	}
-	defer columnRows.Close()
+	defer rows.Close()
 
-	columns := make([]*model.Column, 0)
-	for columnRows.Next() {
+	var columns []*model.Column
+	for rows.Next() {
 		var col model.Column
-		if err := columnRows.Scan(&col.Ordinal, &col.Name, &col.Type, &col.IsNullable, &col.DefaultValue, &col.IsPrimaryKey, &col.Comment); err != nil {
+		if err := rows.Scan(&col.Ordinal, &col.Name, &col.Type, &col.IsNullable, &col.DefaultValue, &col.IsPrimaryKey, &col.Comment); err != nil {
 			return nil, err
 		}
-
-		if len(ignoreColumns) > 0 && slices.Contains(ignoreColumns, col.Name) {
-			continue
+		if !slices.Contains(ignoreColumns, col.Name) {
+			columns = append(columns, &col)
 		}
-
-		columns = append(columns, &col)
 	}
-	t.Columns = columns
+	return columns, nil
+}
 
-	// Indexes and Columns info
+func getMySQLIndexesInfo(ctx context.Context, db *sql.DB, schema, table string) ([]*model.Index, error) {
 	const indexesSql = `
-select index_name,
-       non_unique = 0 as is_unique,
-       index_name = 'PRIMARY' as is_primary,
-       seq_in_index as ordinal,
-       column_name
-from information_schema.statistics
-where table_schema = ?
-  and table_name = ?
-order by index_name, seq_in_index;
-`
-	indexRows, err := db.QueryContext(ctx, indexesSql, schema, table)
+		select index_name, non_unique = 0 as is_unique,
+			   index_name = 'PRIMARY' as is_primary,
+			   seq_in_index as ordinal, column_name
+		from information_schema.statistics
+		where table_schema = ? and table_name = ?
+		order by index_name, seq_in_index;
+	`
+	rows, err := db.QueryContext(ctx, indexesSql, schema, table)
 	if err != nil {
 		return nil, err
 	}
-	defer indexRows.Close()
+	defer rows.Close()
 
 	indexMap := make(map[string]*model.Index)
-	for indexRows.Next() {
+	for rows.Next() {
 		var indexName, columnName string
 		var isUnique, isPrimary bool
 		var ordinal int
 
-		if err := indexRows.Scan(&indexName, &isUnique, &isPrimary, &ordinal, &columnName); err != nil {
+		if err := rows.Scan(&indexName, &isUnique, &isPrimary, &ordinal, &columnName); err != nil {
 			return nil, err
 		}
 
@@ -107,7 +121,7 @@ order by index_name, seq_in_index;
 		})
 	}
 
-	indexes := make([]*model.Index, 0)
+	indexes := make([]*model.Index, 0, len(indexMap))
 	for _, index := range indexMap {
 		indexes = append(indexes, index)
 	}
@@ -122,7 +136,5 @@ order by index_name, seq_in_index;
 		return indexes[i].Name < indexes[j].Name
 	})
 
-	t.Indexes = indexes
-
-	return &t, nil
+	return indexes, nil
 }

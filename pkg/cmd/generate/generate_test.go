@@ -1,9 +1,11 @@
 package generate
 
 import (
+	"strings"
+	"testing"
+
 	"github.com/DanielLiu1123/gencoder/pkg/model"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestParseBlocks(t *testing.T) {
@@ -55,6 +57,140 @@ gencoder block end: block2`,
 		t.Run(tt.name, func(t *testing.T) {
 			got := parseBlocks(tt.args.cfg, tt.args.content)
 			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestReplaceBlocks(t *testing.T) {
+	tests := []struct {
+		name       string
+		cfg        *model.Config
+		oldContent string
+		newContent string
+		wantResult string
+	}{
+		{
+			name: "Replace existing blocks",
+			cfg: &model.Config{
+				BlockMarker: model.BlockMarker{
+					Start: "gencoder block start:",
+					End:   "gencoder block end:",
+				},
+			},
+			oldContent: `
+out of block
+gencoder block start: block1
+old content 1
+gencoder block end: block1
+
+gencoder block start: block2
+old content 2
+gencoder block end: block2
+out of block
+`,
+			newContent: `
+gencoder block start: block1
+new content 1
+gencoder block end: block1
+
+gencoder block start: block2
+new content 2
+gencoder block end: block2
+`,
+			wantResult: `
+out of block
+gencoder block start: block1
+new content 1
+gencoder block end: block1
+
+gencoder block start: block2
+new content 2
+gencoder block end: block2
+out of block
+`,
+		},
+		{
+			name: "Keep non-existing blocks",
+			cfg: &model.Config{
+				BlockMarker: model.BlockMarker{
+					Start: "gencoder block start:",
+					End:   "gencoder block end:",
+				},
+			},
+			oldContent: `
+out of block
+gencoder block start: block1
+old content 1
+gencoder block end: block1
+
+gencoder block start: block2
+old content 2
+gencoder block end: block2
+out of block
+`,
+			newContent: `
+gencoder block start: block1
+new content 1
+gencoder block end: block1
+
+gencoder block start: block3
+new content 3
+gencoder block end: block3
+`,
+			wantResult: `
+out of block
+gencoder block start: block1
+new content 1
+gencoder block end: block1
+
+gencoder block start: block2
+old content 2
+gencoder block end: block2
+out of block
+`,
+		},
+		{
+			name: "No end marker",
+			cfg: &model.Config{
+				BlockMarker: model.BlockMarker{
+					Start: "gencoder block start:",
+					End:   "gencoder block end:",
+				},
+			},
+			oldContent: `
+out of block
+gencoder block start: block1
+old content 1
+gencoder block end: block1
+
+gencoder block start: block2
+old content 2
+old content 2
+`,
+			newContent: `
+gencoder block start: block1
+new content 1
+gencoder block end: block1
+
+gencoder block start: block2
+new content 2
+`,
+			wantResult: `
+out of block
+gencoder block start: block1
+new content 1
+gencoder block end: block1
+
+gencoder block start: block2
+new content 2
+`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotResult := replaceBlocks(tt.cfg, tt.oldContent, tt.newContent)
+			assert.Equal(t, strings.TrimSpace(tt.wantResult), strings.TrimSpace(gotResult))
 		})
 	}
 }
