@@ -2,11 +2,11 @@ package generate
 
 import (
 	"github.com/DanielLiu1123/gencoder/pkg/model"
-	"reflect"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
-func Test_parseBlocks(t *testing.T) {
+func TestParseBlocks(t *testing.T) {
 	type args struct {
 		cfg     *model.Config
 		content string
@@ -53,9 +53,8 @@ gencoder block end: block2`,
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := parseBlocks(tt.args.cfg, tt.args.content); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("parseBlocks() = %v, want %v", got, tt.want)
-			}
+			got := parseBlocks(tt.args.cfg, tt.args.content)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
