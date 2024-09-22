@@ -36,7 +36,10 @@ func NewCmdIntrospect(globalOptions *model.GlobalOptions) *cobra.Command {
 
 	cmd.Flags().StringVarP(&opt.config, "config", "f", globalOptions.Config, "Config file to use")
 	cmd.Flags().StringVarP(&opt.output, "output", "o", "json", "Output format, one of (json, yaml)")
-	_ = cmd.RegisterFlagCompletionFunc("output", completeOutputFormat)
+
+	_ = cmd.RegisterFlagCompletionFunc("output", func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
+		return []string{"json", "yaml"}, cobra.ShellCompDirectiveNoFileComp
+	})
 
 	return cmd
 }
@@ -45,10 +48,6 @@ func validateArgs(_ *cobra.Command, args []string) {
 	if len(args) > 0 {
 		log.Fatalf("introspect command does not accept any arguments")
 	}
-}
-
-func completeOutputFormat(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
-	return []string{"json", "yaml"}, cobra.ShellCompDirectiveNoFileComp
 }
 
 func run(_ *cobra.Command, _ []string, opt *introspectOptions, _ *model.GlobalOptions) {
