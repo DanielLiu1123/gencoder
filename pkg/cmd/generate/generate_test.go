@@ -1,7 +1,6 @@
 package generate
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/DanielLiu1123/gencoder/pkg/model"
@@ -31,11 +30,9 @@ func TestParseBlocks(t *testing.T) {
 out of block
 gencoder block start: block1
 block1
-block1
 gencoder block end: block1
 
 gencoder block start: block2
-block2
 block2
 gencoder block end: block2
 out of block
@@ -44,12 +41,38 @@ out of block
 			want: map[string]string{
 				"block1": `gencoder block start: block1
 block1
-block1
 gencoder block end: block1`,
 				"block2": `gencoder block start: block2
 block2
-block2
 gencoder block end: block2`,
+			},
+		},
+		{
+			name: "Test buildBlocks with no end marker",
+			args: args{
+				cfg: &model.Config{},
+				content: `
+out of block
+
+@gencoder.block.start: block1
+block1
+@gencoder.block.end: block1
+
+@gencoder.block.start: block2
+block2
+block2
+
+`,
+			},
+			want: map[string]string{
+				"block1": `@gencoder.block.start: block1
+block1
+@gencoder.block.end: block1`,
+				"block2": `@gencoder.block.start: block2
+block2
+block2
+
+`,
 			},
 		},
 	}
@@ -190,7 +213,7 @@ new content 2
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotResult := replaceBlocks(tt.cfg, tt.oldContent, tt.newContent)
-			assert.Equal(t, strings.TrimSpace(tt.wantResult), strings.TrimSpace(gotResult))
+			assert.Equal(t, tt.wantResult, gotResult)
 		})
 	}
 }
