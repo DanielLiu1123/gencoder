@@ -2,64 +2,46 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/testcontainers/testcontainers-go/modules/mysql"
 	"github.com/xo/dburl"
 	"os/exec"
 	"testing"
-	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 )
 
-// Helper function to check if Docker is available
-func isDockerAvailable() bool {
-	cmd := exec.Command("docker", "info")
-	err := cmd.Run()
-	return err == nil
-}
-
-// Helper function to start a MySQL container
-func startMySQLContainer() (string, error) {
-	const containerID = "gencoder_test_mysql"
-	cmd := exec.Command("docker", "run", "--name", containerID, "-e", "MYSQL_ROOT_PASSWORD=root", "-e", "MYSQL_DATABASE=testdb", "-p", "3306:3306", "-d", "mysql:latest")
-	if err := cmd.Run(); err != nil {
-		return "", err
-	}
-	return containerID, nil
-}
-
-// Helper function to stop and remove the MySQL container
-func stopContainer(containerID string) {
-	err := exec.Command("docker", "stop", containerID).Run()
-	if err != nil {
-		panic(err)
-	}
-	err = exec.Command("docker", "rm", containerID).Run()
-	if err != nil {
-		panic(err)
-	}
-}
-
 func TestGenMySQLTable(t *testing.T) {
-	if !isDockerAvailable() {
-		t.Log("Docker is not available. Skipping test.")
-		return
-	}
 
-	containerID, err := startMySQLContainer()
+	err := exec.Command("docker", "info").Run()
 	if err != nil {
-		t.Fatalf("Failed to start MySQL container: %s", err)
+		t.Skip("Docker not available, skipping MySQL tests")
 	}
 
-	defer stopContainer(containerID)
+	ctx := context.Background()
+	mysqlContainer, err := mysql.Run(ctx,
+		"mysql:latest",
+		mysql.WithDatabase("testdb"),
+		mysql.WithUsername("root"),
+		mysql.WithPassword("root"),
+	)
+	require.NoError(t, err)
+	defer func() {
+		if err := mysqlContainer.Terminate(ctx); err != nil {
+			t.Fatalf("failed to terminate container: %s", err)
+		}
+	}()
 
-	// Wait for MySQL to initialize
-	time.Sleep(10 * time.Second)
+	host, err := mysqlContainer.Host(ctx)
+	require.NoError(t, err)
+	port, err := mysqlContainer.MappedPort(ctx, "3306")
+	require.NoError(t, err)
 
-	db, err := dburl.Open("mysql://root:root@localhost:3306/testdb")
-	if err != nil {
-		t.Fatalf("Failed to open database connection: %s", err)
-	}
+	dsn := fmt.Sprintf("mysql://root:root@%s:%s/testdb", host, port.Port())
+	db, err := dburl.Open(dsn)
+	require.NoError(t, err)
 
 	_, err = db.Exec(`CREATE TABLE testdb.user (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -77,17 +59,13 @@ func TestGenMySQLTable(t *testing.T) {
         INDEX idx_status_created (status, created_at),
         INDEX idx_full_name (first_name, last_name)
     ) COMMENT='User account information';`)
-	if err != nil {
-		t.Fatalf("Failed to create test table: %s", err)
-	}
+	require.NoError(t, err)
 
 	schema := "testdb"
 	table := "user"
 
 	tb, err := GenMySQLTable(context.Background(), db, schema, table, []string{"deleted_at"})
-	if err != nil {
-		t.Fatalf("Failed to generate MySQL table: %s", err)
-	}
+	require.NoError(t, err)
 
 	assert.NotNil(t, tb)
 	assert.Equal(t, "testdb", tb.Schema)
