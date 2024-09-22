@@ -23,14 +23,14 @@ import (
 
 // ReadConfig reads the configuration file from the given path
 func ReadConfig(configPath string) (*model.Config, error) {
+	var cfg model.Config
 	file, err := os.ReadFile(configPath)
 	if err != nil {
-		return nil, err
+		return &cfg, err
 	}
 
-	var cfg model.Config
 	if err := yaml.Unmarshal(file, &cfg); err != nil {
-		return nil, err
+		return &cfg, err
 	}
 
 	return &cfg, nil
