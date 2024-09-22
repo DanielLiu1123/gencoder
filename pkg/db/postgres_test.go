@@ -2,33 +2,46 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/testcontainers/testcontainers-go/modules/postgres"
 	"github.com/xo/dburl"
 	"os/exec"
 	"testing"
-	"time"
 
 	_ "github.com/lib/pq"
 )
 
 func TestGenPostgresTable(t *testing.T) {
-	if !isDockerAvailable() {
-		t.Log("Docker is not available. Skipping TestGenPostgresTable test.")
-		return
-	}
-
-	containerID, err := startPostgresContainer()
+	err := exec.Command("docker", "info").Run()
 	if err != nil {
-		t.Fatalf("Failed to start Postgres container: %s", err)
+		t.Skip("Docker not available, skipping MySQL tests")
 	}
-	defer stopContainer(containerID)
 
-	time.Sleep(5 * time.Second)
+	ctx := context.Background()
+	postgresContainer, err := postgres.Run(ctx,
+		"postgres:latest",
+		postgres.WithDatabase("testdb"),
+		postgres.WithUsername("root"),
+		postgres.WithPassword("root"),
+		postgres.BasicWaitStrategies(),
+	)
+	require.NoError(t, err)
+	defer func() {
+		if err := postgresContainer.Terminate(ctx); err != nil {
+			t.Fatalf("failed to terminate container: %s", err)
+		}
+	}()
 
-	db, err := dburl.Open("postgres://root:root@localhost:5432/testdb?sslmode=disable")
-	if err != nil {
-		t.Fatalf("Failed to open database connection: %s", err)
-	}
+	host, err := postgresContainer.Host(ctx)
+	require.NoError(t, err)
+	port, err := postgresContainer.MappedPort(ctx, "5432")
+	require.NoError(t, err)
+
+	dsn := fmt.Sprintf("postgres://root:root@%s:%s/testdb?sslmode=disable", host, port.Port())
+	db, err := dburl.Open(dsn)
+	require.NoError(t, err)
 
 	_, err = db.Exec(`CREATE TABLE testdb.public."user" (
     id SERIAL PRIMARY KEY,
@@ -55,17 +68,13 @@ COMMENT ON COLUMN testdb.public."user".updated_at IS 'Record update timestamp';
 COMMENT ON COLUMN testdb.public."user".status IS 'Account status';
 COMMENT ON COLUMN testdb.public."user".deleted_at IS 'Record deletion timestamp';
 COMMENT ON TABLE testdb.public."user" IS 'User account information';`)
-	if err != nil {
-		t.Fatalf("Failed to create test table: %s", err)
-	}
+	require.NoError(t, err)
 
 	schema := "public"
 	table := "user"
 
 	tb, err := GenPostgresTable(context.Background(), db, schema, table, []string{"deleted_at"})
-	if err != nil {
-		t.Fatalf("Failed to generate Postgres table: %s", err)
-	}
+	require.NoError(t, err)
 
 	assert.NotNil(t, tb)
 	assert.Equal(t, "public", tb.Schema)
@@ -77,13 +86,4 @@ COMMENT ON TABLE testdb.public."user" IS 'User account information';`)
 	assert.Equal(t, false, tb.Columns[1].IsPrimaryKey)
 
 	assert.Equal(t, 5, len(tb.Indexes))
-}
-
-func startPostgresContainer() (string, error) {
-	const containerID = "gencoder_test_postgres"
-	cmd := exec.Command("docker", "run", "--name", containerID, "-e", "POSTGRES_USER=root", "-e", "POSTGRES_PASSWORD=root", "-e", "POSTGRES_DB=testdb", "-p", "5432:5432", "-d", "postgres:latest")
-	if err := cmd.Run(); err != nil {
-		return "", err
-	}
-	return containerID, nil
 }
