@@ -5,11 +5,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/DanielLiu1123/gencoder/pkg/db"
-	"github.com/DanielLiu1123/gencoder/pkg/handlebars"
-	"github.com/DanielLiu1123/gencoder/pkg/model"
-	"github.com/xo/dburl"
-	"gopkg.in/yaml.v3"
 	"io/fs"
 	"log"
 	"os"
@@ -18,6 +13,12 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+
+	"github.com/DanielLiu1123/gencoder/pkg/db"
+	"github.com/DanielLiu1123/gencoder/pkg/handlebars"
+	"github.com/DanielLiu1123/gencoder/pkg/model"
+	"github.com/xo/dburl"
+	"gopkg.in/yaml.v3"
 )
 
 // ReadConfig reads the configuration file from the given path
@@ -103,9 +104,6 @@ func LoadTemplates(cfg *model.Config, commandLineTemplates string) ([]*model.Tpl
 		}
 
 		template := handlebars.Compile(string(b))
-		if err != nil {
-			return err
-		}
 
 		t := &model.Tpl{
 			TemplateName:      d.Name(),
