@@ -58,7 +58,7 @@ func NewCmdGenerate(globalOptions *model.GlobalOptions) *cobra.Command {
 	c.Flags().StringVarP(&opt.config, "config", "f", globalOptions.Config, "Config file to use")
 	c.Flags().StringVarP(&opt.importHelper, "import-helper", "i", "", "Import helper JavaScript file, can be URL ([http|https]://...) or file path")
 	c.Flags().StringSliceVarP(&props, "properties", "p", []string{}, "Add properties, will override properties in config file, --properties=\"k1=v1\" --properties=\"k2=v2,k3=v3\"")
-	c.Flags().StringVarP(&opt.commandLineTemplates, "templates", "t", "", "Override templates directory or URL")
+	c.Flags().StringVarP(&opt.commandLineTemplates, "templates", "t", "", "Override templates directory, can be path or URL, e.g. https://github.com/DanielLiu1123/gencoder/tree/main/templates")
 
 	return c
 }
