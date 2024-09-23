@@ -4,7 +4,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
   title: 'Gencoder',
-  tagline: 'A code generator for any language or framework that preserves your custom changes during regeneration, powered by Handlebars.',
+  tagline: 'A code generator for any language or framework that preserves your changes during regeneration, powered by Handlebars.',
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here

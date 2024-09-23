@@ -1,6 +1,6 @@
 # Gencoder
 
-A code generator for any language or framework that preserves your custom changes during regeneration, powered by [Handlebars](https://handlebarsjs.com/).
+A code generator for any language or framework that preserves your changes during regeneration, powered by [Handlebars](https://handlebarsjs.com/).
 
 ## Background
 
