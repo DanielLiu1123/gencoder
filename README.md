@@ -5,7 +5,6 @@ A code generator for any language or framework that preserves your changes durin
 ## Table of Contents
 
 - [Background](#background)
-- [Features](#features)
 - [Install](#install)
 - [Quick Start](#quick-start)
 - [Contributing](#contributing)
@@ -17,16 +16,9 @@ In the real world, code generators are often used to create some boilerplate cod
 then you develop your own code based on it. However, when you regenerate the code, your changes will be overwritten,
 and you have to merge them manually (which is very annoying).
 
-Gencoder is designed to solve this problem. It can recognize which parts of the file are generated
-and which parts are manually added. When regenerating, it only overwrites the automatically generated parts,
+Gencoder is designed to solve this problem. It can recognize which parts of the file are generated and which parts are manually added. 
+When regenerating, it only overwrites the automatically generated parts,
 and the manual parts remain unchanged. No more manual merging.
-
-## Features
-
-- Recognizes generated and manually added code
-- Preserves manual changes during regeneration
-- Supports multiple languages and frameworks
-- Easy to integrate with existing projects
 
 ## Install
 
@@ -44,7 +36,7 @@ make && CGO_ENABLED=0 go build -o gencoder cmd/gencoder/main.go
 
 ![gencoder.gif](website/static/img/gencoder.gif)
 
-Run a MySQL server:
+Run a MySQL server (not shown on the previous gif):
 
 ```bash
 docker rm -f test_mysql && docker run --name test_mysql -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=testdb -p 3306:3306 -p 33060:33060 -id mysql:latest && sleep 10 && docker exec -i test_mysql mysql -uroot -proot -e "\
@@ -61,11 +53,64 @@ Init basic configuration:
 gencoder init
 ```
 
-Generate code:
+First time generate:
 
 ```bash
 gencoder generate
 ```
+
+Modify the generated code:
+
+```diff
+/**
+ * @gencoder.block.start: table
+ */
+public record User (
+    // ...
+
+-   // NOTE: you can't make changes in the block, it will be overwritten by generating again
++   // NOTE: YOU CAN'T MAKE CHANGES IN THE BLOCK, IT WILL BE OVERWRITTEN BY GENERATING AGAIN
+
+    // @gencoder.block.end: table
+) {
+
+-   // TIP: you can make changes outside the block, it will not be overwritten by generating again
++   // TIP: YOU CAN MAKE CHANGES OUTSIDE THE BLOCK, IT WILL NOT BE OVERWRITTEN BY GENERATING AGAIN
+    public void hello() {
+        System.out.println("Hello, World!");
+    }
+}
+```
+
+Generate again:
+
+```bash
+gencoder generate
+```
+
+Check the changes:
+
+```diff
+/**
+ * @gencoder.block.start: table
+ */
+public record User (
+    // ...
+
+-   // NOTE: YOU CAN'T MAKE CHANGES IN THE BLOCK, IT WILL BE OVERWRITTEN BY GENERATING AGAIN
++   // NOTE: you can't make changes in the block, it will be overwritten by generating again
+
+    // @gencoder.block.end: table
+) {
+
+    // TIP: YOU CAN MAKE CHANGES OUTSIDE THE BLOCK, IT WILL NOT BE OVERWRITTEN BY GENERATING AGAIN
+    public void hello() {
+        System.out.println("Hello, World!");
+    }
+}
+```
+
+Only the code in the block will be overwritten, and the code outside the block will remain unchanged.
 
 ## Contributing
 
