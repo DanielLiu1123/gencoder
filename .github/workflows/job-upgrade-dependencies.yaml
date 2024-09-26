@@ -32,7 +32,7 @@ jobs:
           fi
 
       - name: Create Pull Request
-        if: env.has_changes == 1
+        if: env.has_changes == '1'
         uses: peter-evans/create-pull-request@v7
         with:
           commit-message: "Upgrade dependencies"
