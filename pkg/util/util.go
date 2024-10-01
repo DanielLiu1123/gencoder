@@ -258,3 +258,16 @@ func createRenderContext(cfg *model.Config, dbCfg *model.DatabaseConfig, tbCfg *
 		TableConfig:    tbCfg,
 	}
 }
+
+// WriteFile writes the content to the given file, creating directories if necessary
+func WriteFile(filename string, content []byte) error {
+	dir := filepath.Dir(filename)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return err
+	}
+	err := os.WriteFile(filename, content, 0644)
+	if err != nil {
+		return err
+	}
+	return nil
+}

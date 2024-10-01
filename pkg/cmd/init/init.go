@@ -1,6 +1,7 @@
 package init
 
 import (
+	"github.com/DanielLiu1123/gencoder/pkg/util"
 	"log"
 	"os"
 	"path/filepath"
@@ -20,7 +21,10 @@ func NewCmdInit(globalOptions *model.GlobalOptions) *cobra.Command {
 		Use:   "init",
 		Short: "Init basic configuration for gencoder",
 		Example: `  # Init basic configuration for gencoder
-  $ gencoder init`,
+  $ gencoder init
+
+  # Init basic configuration in a specific directory
+  $ gencoder init -o myproject`,
 		Run: func(cmd *cobra.Command, args []string) {
 			run(cmd, args, opt, globalOptions)
 		},
@@ -33,7 +37,6 @@ func NewCmdInit(globalOptions *model.GlobalOptions) *cobra.Command {
 
 func run(_ *cobra.Command, _ []string, opt *initOptions, _ *model.GlobalOptions) {
 	initGencoderYaml(opt)
-	initTemplatesDir(opt)
 	initTemplates(opt)
 
 	log.Println("Init success! Please modify the gencoder.yaml and templates to fit your project needs.")
@@ -51,16 +54,6 @@ databases:
           package: 'com.example'
 `
 	writeFileIfNotExists(filepath.Join(opt.output, "gencoder.yaml"), []byte(gencoderYaml))
-}
-
-func initTemplatesDir(opt *initOptions) {
-	out := filepath.Join(opt.output, "templates")
-	if _, err := os.Stat(out); os.IsNotExist(err) {
-		err := os.Mkdir(out, 0755)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
 }
 
 func initTemplates(opt *initOptions) {
@@ -121,9 +114,9 @@ public record {{_pascalCase table.name}} (
 
 func writeFileIfNotExists(filename string, data []byte) {
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
-		err := os.WriteFile(filename, data, 0644)
-		if err != nil {
-			log.Fatal(err)
+		e := util.WriteFile(filename, data)
+		if e != nil {
+			log.Fatal(e)
 		}
 	}
 }

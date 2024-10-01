@@ -235,19 +235,15 @@ func updateExistingFile(cfg *model.Config, fileName, newContent string) {
 	}
 
 	realContent := replaceBlocks(cfg, string(oldContent), newContent)
-	writeFile(fileName, []byte(realContent))
+	err = util.WriteFile(fileName, []byte(realContent))
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func createNewFile(fileName string, content []byte) {
-	dir := filepath.Dir(fileName)
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		log.Fatal(err)
-	}
-	writeFile(fileName, content)
-}
-
-func writeFile(fileName string, content []byte) {
-	if err := os.WriteFile(fileName, content, 0644); err != nil {
+	err := util.WriteFile(fileName, content)
+	if err != nil {
 		log.Fatal(err)
 	}
 }
