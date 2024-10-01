@@ -21,6 +21,7 @@ type generateOptions struct {
 	importHelper          string
 	commandLineProperties map[string]string
 	commandLineTemplates  string
+	includeNonTpl         bool
 }
 
 func NewCmdGenerate(globalOptions *model.GlobalOptions) *cobra.Command {
@@ -59,6 +60,7 @@ func NewCmdGenerate(globalOptions *model.GlobalOptions) *cobra.Command {
 	c.Flags().StringVarP(&opt.importHelper, "import-helper", "i", "", "Import helper JavaScript file, can be URL ([http|https]://...) or file path")
 	c.Flags().StringSliceVarP(&props, "properties", "p", []string{}, "Add properties, will override properties in config file, --properties=\"k1=v1\" --properties=\"k2=v2,k3=v3\"")
 	c.Flags().StringVarP(&opt.commandLineTemplates, "templates", "t", "", "Override templates directory, can be path or URL, e.g. https://github.com/DanielLiu1123/gencoder/tree/main/templates")
+	c.Flags().BoolVarP(&opt.includeNonTpl, "include-non-tpl", "a", false, "Include non-template files in the 'templates' option")
 
 	return c
 }
@@ -121,19 +123,29 @@ func run(_ *cobra.Command, _ []string, opt *generateOptions, _ *model.GlobalOpti
 		log.Fatal(err)
 	}
 
-	templates, err := util.LoadTemplates(cfg, opt.commandLineTemplates)
+	files, err := util.LoadFiles(cfg, opt.commandLineTemplates)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	registerPartialTemplates(templates)
+	registerPartials(files)
 
 	renderContexts := util.CollectRenderContexts(cfg, opt.commandLineProperties)
 
+	if opt.includeNonTpl {
+		for _, f := range files {
+			generateForNormalFiles(f)
+		}
+	}
+
 	if len(renderContexts) > 0 {
-		generateForAllContexts(cfg, templates, renderContexts)
+		generateForAllContexts(cfg, files, renderContexts)
 	} else {
-		generateFromBoilerplate(cfg, templates, opt.commandLineProperties)
+		properties := mergeProperties(cfg.Properties, opt.commandLineProperties)
+		renderContext := &model.RenderContext{Properties: properties, Config: cfg}
+		for _, t := range files {
+			generateForTemplateFiles(cfg, t, renderContext)
+		}
 	}
 }
 
@@ -145,27 +157,29 @@ func loadConfig(opt *generateOptions) (*model.Config, error) {
 	return cfg, nil
 }
 
-func registerPartialTemplates(templates []*model.Tpl) {
-	for _, t := range templates {
-		if t.GeneratedFileName == "" {
-			handlebars.RegisterPartial(t.TemplateName, t.Source)
+func registerPartials(files []*model.File) {
+	for _, f := range files {
+		if f.Type == model.FileTypePartial {
+			handlebars.RegisterPartial(f.Name, string(f.Content))
 		}
 	}
 }
 
-func generateForAllContexts(cfg *model.Config, templates []*model.Tpl, renderContexts []*model.RenderContext) {
+func generateForAllContexts(cfg *model.Config, files []*model.File, renderContexts []*model.RenderContext) {
 	for _, ctx := range renderContexts {
-		for _, t := range templates {
-			generate(cfg, t, ctx)
+		for _, f := range files {
+			generateForTemplateFiles(cfg, f, ctx)
 		}
 	}
 }
 
-func generateFromBoilerplate(cfg *model.Config, templates []*model.Tpl, commandLineProperties map[string]string) {
-	properties := mergeProperties(cfg.Properties, commandLineProperties)
-	renderContext := &model.RenderContext{Properties: properties, Config: cfg}
-	for _, t := range templates {
-		generate(cfg, t, renderContext)
+func generateForNormalFiles(f *model.File) {
+	if f.Type != model.FileTypeNormal {
+		return
+	}
+
+	if _, err := os.Stat(f.RelativePath); err != nil {
+		createNewFile(f.RelativePath, f.Content)
 	}
 }
 
@@ -180,19 +194,19 @@ func mergeProperties(configProps map[string]string, cmdLineProps map[string]stri
 	return merged
 }
 
-func generate(cfg *model.Config, tpl *model.Tpl, ctx *model.RenderContext) {
-	if tpl.GeneratedFileName == "" { // partial template
+func generateForTemplateFiles(cfg *model.Config, tpl *model.File, ctx *model.RenderContext) {
+	if tpl.Type != model.FileTypeTemplate {
 		return
 	}
 
 	context := util.ToMap(ctx)
 	newContent := handlebars.Render(tpl.Template, context)
-	fileName := getFileName(tpl.GeneratedFileName, context)
+	fileName := getFileName(tpl.Output, context)
 
 	if _, err := os.Stat(fileName); err == nil {
 		updateExistingFile(cfg, fileName, newContent)
 	} else {
-		createNewFile(fileName, newContent)
+		createNewFile(fileName, []byte(newContent))
 	}
 }
 
@@ -203,10 +217,10 @@ func updateExistingFile(cfg *model.Config, fileName, newContent string) {
 	}
 
 	realContent := replaceBlocks(cfg, string(oldContent), newContent)
-	writeFile(fileName, realContent)
+	writeFile(fileName, []byte(realContent))
 }
 
-func createNewFile(fileName, content string) {
+func createNewFile(fileName string, content []byte) {
 	dir := filepath.Dir(fileName)
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		log.Fatal(err)
@@ -214,8 +228,8 @@ func createNewFile(fileName, content string) {
 	writeFile(fileName, content)
 }
 
-func writeFile(fileName, content string) {
-	if err := os.WriteFile(fileName, []byte(content), 0644); err != nil {
+func writeFile(fileName string, content []byte) {
+	if err := os.WriteFile(fileName, content, 0644); err != nil {
 		log.Fatal(err)
 	}
 }

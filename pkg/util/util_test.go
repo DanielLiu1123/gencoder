@@ -59,11 +59,11 @@ package main
 		OutputMarker: "@gencoder.generated:",
 	}
 
-	templates, err := LoadTemplates(cfg, "")
+	templates, err := LoadFiles(cfg, "")
 	assert.NoError(t, err)
 	assert.Len(t, templates, 1)
-	assert.Equal(t, "test.go.hbs", templates[0].TemplateName)
-	assert.Equal(t, "{{table.name}}.go", templates[0].GeneratedFileName)
+	assert.Equal(t, "test.go.hbs", templates[0].Name)
+	assert.Equal(t, "{{table.name}}.go", templates[0].Output)
 }
 
 func TestCollectRenderContexts(t *testing.T) {
