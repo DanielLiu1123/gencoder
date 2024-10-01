@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
+	"github.com/DanielLiu1123/gencoder/pkg/util"
 	"io"
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strings"
 )
 
@@ -62,11 +62,8 @@ func genHandlebarJS() {
 }
 
 func generateFile(filePath, content string) {
-	if err := os.MkdirAll(filepath.Dir(filePath), 0755); err != nil {
-		log.Fatal(err)
-	}
-	err := os.WriteFile(filePath, []byte(content), 0644)
+	err := util.WriteFile(filePath, []byte(content))
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Error writing file:", err)
 	}
 }

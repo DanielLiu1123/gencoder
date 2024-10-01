@@ -1,6 +1,9 @@
 package generate
 
 import (
+	"github.com/stretchr/testify/require"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/DanielLiu1123/gencoder/pkg/model"
@@ -216,4 +219,66 @@ new content 2
 			assert.Equal(t, tt.wantResult, gotResult)
 		})
 	}
+}
+
+func TestNewCmdGenerate_whenUsingIncludeNonTpl_thenShouldGenerateNonTemplateFiles(t *testing.T) {
+
+	// Create template directory
+	tplDir, err := os.MkdirTemp("", "tpl")
+	require.NoError(t, err)
+	defer os.RemoveAll(tplDir)
+
+	_ = os.Chdir(tplDir)
+
+	// Create non-template files
+	createNewFile(filepath.Join(tplDir, "templates/non-template1.txt"), []byte("This is a non-template file"))
+	createNewFile(filepath.Join(tplDir, "templates/foo/non-template2.txt"), []byte("This is a non-template file"))
+	// Create partial file
+	createNewFile(filepath.Join(tplDir, "templates/header.txt.hbs"), []byte("This is a header"))
+	// Create template file
+	createNewFile(filepath.Join(tplDir, "templates/test1.text.hbs"), []byte(`@gencoder.generated: test1.txt
+{{> header.txt.hbs}}
+
+Hello, {{properties.name}}!`))
+	createNewFile(filepath.Join(tplDir, "templates/test2.text.hbs"), []byte(`@gencoder.generated: foo/test2.txt
+{{> header.txt.hbs}}
+
+Hello, {{properties.name}}!`))
+
+	// Create generated directory
+	generatedDir, err := os.MkdirTemp("", "generated")
+	require.NoError(t, err)
+	defer os.RemoveAll(generatedDir)
+
+	_ = os.Chdir(generatedDir)
+
+	cmd := NewCmdGenerate(&model.GlobalOptions{})
+
+	cmd.SetArgs([]string{"--templates", filepath.Join(tplDir, "templates"), "--include-non-tpl", "--properties", "name=World"})
+
+	err = cmd.Execute()
+	require.NoError(t, err)
+
+	// Verify non-template files are generated
+	_, err = os.Stat(filepath.Join(generatedDir, "non-template1.txt"))
+	assert.NoError(t, err)
+	_, err = os.Stat(filepath.Join(generatedDir, "foo/non-template2.txt")) // keep directory structure
+	assert.NoError(t, err)
+
+	// Verify partial files do not exist
+	_, err = os.Stat(filepath.Join(generatedDir, "header.txt.hbs"))
+	assert.Error(t, err)
+
+	// Verify template files are generated
+	content, err := os.ReadFile(filepath.Join(generatedDir, "test1.txt"))
+	assert.NoError(t, err)
+	assert.Equal(t, `@gencoder.generated: test1.txt
+This is a header
+Hello, World!`, string(content))
+
+	content, err = os.ReadFile(filepath.Join(generatedDir, "foo/test2.txt")) // keep directory structure
+	assert.NoError(t, err)
+	assert.Equal(t, `@gencoder.generated: foo/test2.txt
+This is a header
+Hello, World!`, string(content))
 }

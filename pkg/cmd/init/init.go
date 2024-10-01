@@ -1,6 +1,7 @@
 package init
 
 import (
+	"github.com/DanielLiu1123/gencoder/pkg/util"
 	"log"
 	"os"
 	"path/filepath"
@@ -10,33 +11,40 @@ import (
 )
 
 type initOptions struct {
+	output string
 }
 
 func NewCmdInit(globalOptions *model.GlobalOptions) *cobra.Command {
 	opt := &initOptions{}
 
-	return &cobra.Command{
+	c := &cobra.Command{
 		Use:   "init",
 		Short: "Init basic configuration for gencoder",
 		Example: `  # Init basic configuration for gencoder
-  $ gencoder init`,
+  $ gencoder init
+
+  # Init basic configuration in a specific directory
+  $ gencoder init -o myproject`,
 		Run: func(cmd *cobra.Command, args []string) {
 			run(cmd, args, opt, globalOptions)
 		},
 	}
+
+	c.Flags().StringVarP(&opt.output, "output", "o", "", "Output directory, default to current directory")
+
+	return c
 }
 
-func run(_ *cobra.Command, _ []string, _ *initOptions, _ *model.GlobalOptions) {
-	initGencoderYaml()
-	initTemplatesDir()
-	initTemplates()
+func run(_ *cobra.Command, _ []string, opt *initOptions, _ *model.GlobalOptions) {
+	initGencoderYaml(opt)
+	initTemplates(opt)
 
 	log.Println("Init success! Please modify the gencoder.yaml and templates to fit your project needs.")
 	log.Println()
 	log.Println("Thank you for using gencoder!")
 }
 
-func initGencoderYaml() {
+func initGencoderYaml(opt *initOptions) {
 	gencoderYaml := `templates: templates
 databases:
   - dsn: 'mysql://root:root@localhost:3306/testdb'
@@ -45,19 +53,10 @@ databases:
         properties:
           package: 'com.example'
 `
-	writeFileIfNotExists("gencoder.yaml", []byte(gencoderYaml))
+	writeFileIfNotExists(filepath.Join(opt.output, "gencoder.yaml"), []byte(gencoderYaml))
 }
 
-func initTemplatesDir() {
-	if _, err := os.Stat("templates"); os.IsNotExist(err) {
-		err := os.Mkdir("templates", 0755)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-}
-
-func initTemplates() {
+func initTemplates(opt *initOptions) {
 	entityJava := `/**
  * @gencoder.generated: src/main/java/{{_replaceAll properties.package '.' '/'}}/{{_pascalCase table.name}}.java
  */
@@ -92,8 +91,6 @@ public record {{_pascalCase table.name}} (
     }
 }
 `
-	writeFileIfNotExists(filepath.Join("templates", "entity.java.hbs"), []byte(entityJava))
-
 	javaTypePartial := `{{~#if (_match 'varchar\(\d+\)|char|tinytext|text|mediumtext|longtext' columnType)}}String
 {{~else if (_match 'bigint' columnType)}}Long
 {{~else if (_match 'int|integer|mediumint' columnType)}}Integer
@@ -110,14 +107,16 @@ public record {{_pascalCase table.name}} (
 {{~else if (_match 'enum.*' columnType)}}String
 {{~else}}Object
 {{~/if}}`
-	writeFileIfNotExists(filepath.Join("templates", "java_type.partial.hbs"), []byte(javaTypePartial))
+
+	writeFileIfNotExists(filepath.Join(opt.output, "templates", "entity.java.hbs"), []byte(entityJava))
+	writeFileIfNotExists(filepath.Join(opt.output, "templates", "java_type.partial.hbs"), []byte(javaTypePartial))
 }
 
 func writeFileIfNotExists(filename string, data []byte) {
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
-		err := os.WriteFile(filename, data, 0644)
-		if err != nil {
-			log.Fatal(err)
+		e := util.WriteFile(filename, data)
+		if e != nil {
+			log.Fatal(e)
 		}
 	}
 }

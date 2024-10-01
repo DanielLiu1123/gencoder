@@ -12,9 +12,19 @@ type RenderContext struct {
 	TableConfig    *TableConfig      `json:"tableConfig" yaml:"tableConfig"`
 }
 
-type Tpl struct {
-	TemplateName      string     // template file name
-	GeneratedFileName string     // generated file name, if empty, it's a partial template
-	Source            string     // template source code
-	Template          goja.Value // compiled template
+type FileType int
+
+const (
+	FileTypeNormal FileType = iota
+	FileTypePartial
+	FileTypeTemplate
+)
+
+type File struct {
+	Name         string
+	RelativePath string
+	Content      []byte
+	Type         FileType
+	Output       string     // for Template FileType
+	Template     goja.Value // for Template/Partial FileType
 }
