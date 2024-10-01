@@ -17,11 +17,14 @@ import (
 )
 
 type generateOptions struct {
-	config                string
-	importHelper          string
-	commandLineProperties map[string]string
-	commandLineTemplates  string
-	includeNonTpl         bool
+	config        string
+	importHelper  string
+	includeNonTpl bool
+
+	// Override config file gencoder.yaml
+	Templates  string
+	Properties map[string]string // Add properties, will override properties in config file
+	output     string
 }
 
 func NewCmdGenerate(globalOptions *model.GlobalOptions) *cobra.Command {
@@ -46,7 +49,7 @@ func NewCmdGenerate(globalOptions *model.GlobalOptions) *cobra.Command {
 `,
 		PreRun: func(cmd *cobra.Command, args []string) {
 			validateArgs(args)
-			opt.commandLineProperties = parseProperties(props)
+			opt.Properties = parseProperties(props)
 			if opt.importHelper != "" {
 				registerCustomHelpers(opt.importHelper)
 			}
@@ -59,8 +62,9 @@ func NewCmdGenerate(globalOptions *model.GlobalOptions) *cobra.Command {
 	c.Flags().StringVarP(&opt.config, "config", "f", globalOptions.Config, "Config file to use")
 	c.Flags().StringVarP(&opt.importHelper, "import-helper", "i", "", "Import helper JavaScript file, can be URL ([http|https]://...) or file path")
 	c.Flags().StringSliceVarP(&props, "properties", "p", []string{}, "Add properties, will override properties in config file, --properties=\"k1=v1\" --properties=\"k2=v2,k3=v3\"")
-	c.Flags().StringVarP(&opt.commandLineTemplates, "templates", "t", "", "Override templates directory, can be path or URL, e.g. https://github.com/DanielLiu1123/gencoder/tree/main/templates")
+	c.Flags().StringVarP(&opt.Templates, "templates", "t", "", "Override templates directory, can be path or URL, e.g. https://github.com/DanielLiu1123/gencoder/tree/main/templates")
 	c.Flags().BoolVarP(&opt.includeNonTpl, "include-non-tpl", "a", false, "Include non-template files in the 'templates' option")
+	c.Flags().StringVarP(&opt.output, "output", "o", "", "Output directory for generated files, default is the current directory")
 
 	return c
 }
@@ -123,25 +127,27 @@ func run(_ *cobra.Command, _ []string, opt *generateOptions, _ *model.GlobalOpti
 		log.Fatal(err)
 	}
 
-	files, err := util.LoadFiles(cfg, opt.commandLineTemplates)
+	mergeCmdOptionsToConfig(cfg, opt)
+
+	files, err := util.LoadFiles(cfg)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	registerPartials(files)
 
-	renderContexts := util.CollectRenderContexts(cfg, opt.commandLineProperties)
+	renderContexts := util.CollectRenderContexts(cfg, opt.Properties)
 
 	if opt.includeNonTpl {
 		for _, f := range files {
-			generateForNormalFiles(f)
+			generateForNormalFiles(cfg, f)
 		}
 	}
 
 	if len(renderContexts) > 0 {
 		generateForAllContexts(cfg, files, renderContexts)
 	} else {
-		properties := mergeProperties(cfg.Properties, opt.commandLineProperties)
+		properties := mergeProperties(cfg.Properties, opt.Properties)
 		renderContext := &model.RenderContext{Properties: properties, Config: cfg}
 		for _, t := range files {
 			generateForTemplateFiles(cfg, t, renderContext)
@@ -149,9 +155,18 @@ func run(_ *cobra.Command, _ []string, opt *generateOptions, _ *model.GlobalOpti
 	}
 }
 
+func mergeCmdOptionsToConfig(cfg *model.Config, opt *generateOptions) {
+	if opt.output != "" {
+		cfg.Output = opt.output
+	}
+	if opt.Templates != "" {
+		cfg.Templates = opt.Templates
+	}
+}
+
 func loadConfig(opt *generateOptions) (*model.Config, error) {
 	cfg, err := util.ReadConfig(opt.config)
-	if (err != nil && !errors.Is(err, os.ErrNotExist)) || (errors.Is(err, os.ErrNotExist) && opt.commandLineTemplates == "") {
+	if (err != nil && !errors.Is(err, os.ErrNotExist)) || (errors.Is(err, os.ErrNotExist) && opt.Templates == "") {
 		return nil, err
 	}
 	return cfg, nil
@@ -173,13 +188,15 @@ func generateForAllContexts(cfg *model.Config, files []*model.File, renderContex
 	}
 }
 
-func generateForNormalFiles(f *model.File) {
+func generateForNormalFiles(cfg *model.Config, f *model.File) {
 	if f.Type != model.FileTypeNormal {
 		return
 	}
 
-	if _, err := os.Stat(f.RelativePath); err != nil {
-		createNewFile(f.RelativePath, f.Content)
+	out := filepath.Join(cfg.Output, f.RelativePath)
+
+	if _, err := os.Stat(out); err != nil {
+		createNewFile(out, f.Content)
 	}
 }
 
@@ -202,11 +219,12 @@ func generateForTemplateFiles(cfg *model.Config, tpl *model.File, ctx *model.Ren
 	context := util.ToMap(ctx)
 	newContent := handlebars.Render(tpl.Template, context)
 	fileName := getFileName(tpl.Output, context)
+	out := filepath.Join(cfg.Output, fileName)
 
-	if _, err := os.Stat(fileName); err == nil {
-		updateExistingFile(cfg, fileName, newContent)
+	if _, err := os.Stat(out); err == nil {
+		updateExistingFile(cfg, out, newContent)
 	} else {
-		createNewFile(fileName, []byte(newContent))
+		createNewFile(out, []byte(newContent))
 	}
 }
 

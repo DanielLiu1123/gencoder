@@ -37,11 +37,8 @@ func ReadConfig(configPath string) (*model.Config, error) {
 }
 
 // LoadFiles loads all files from the given path
-func LoadFiles(cfg *model.Config, commandLineTemplates string) ([]*model.File, error) {
+func LoadFiles(cfg *model.Config) ([]*model.File, error) {
 	templatePath := cfg.GetTemplates()
-	if commandLineTemplates != "" {
-		templatePath = commandLineTemplates
-	}
 
 	if isGitHubURL(templatePath) {
 		var err error
@@ -81,7 +78,7 @@ func cloneGitHubRepo(url string) (string, error) {
 
 	cloneURL := fmt.Sprintf("https://github.com/%s/%s.git", owner, repo)
 	cmd := exec.Command("git", "clone", "--branch", branch, "--depth", "1", cloneURL, tmpDir)
-	cmd.Stdout = os.Stdout
+	cmd.Stdout = nil
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
 		return "", fmt.Errorf("failed to clone repository: %v", err)

@@ -59,7 +59,7 @@ package main
 		OutputMarker: "@gencoder.generated:",
 	}
 
-	templates, err := LoadFiles(cfg, "")
+	templates, err := LoadFiles(cfg)
 	assert.NoError(t, err)
 	assert.Len(t, templates, 1)
 	assert.Equal(t, "test.go.hbs", templates[0].Name)
