@@ -6,6 +6,7 @@ type Config struct {
 	BlockMarker  BlockMarker       `json:"blockMarker" yaml:"blockMarker"`
 	Databases    []*DatabaseConfig `json:"databases" yaml:"databases"`
 	Properties   map[string]string `json:"properties" yaml:"properties"`
+	Output       string            `json:"output" yaml:"output"`
 }
 
 type DatabaseConfig struct {

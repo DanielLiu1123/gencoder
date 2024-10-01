@@ -36,12 +36,9 @@ func ReadConfig(configPath string) (*model.Config, error) {
 	return &cfg, nil
 }
 
-// LoadTemplates loads all templates from the given configuration and command line templates
-func LoadTemplates(cfg *model.Config, commandLineTemplates string) ([]*model.Tpl, error) {
+// LoadFiles loads all files from the given path
+func LoadFiles(cfg *model.Config) ([]*model.File, error) {
 	templatePath := cfg.GetTemplates()
-	if commandLineTemplates != "" {
-		templatePath = commandLineTemplates
-	}
 
 	if isGitHubURL(templatePath) {
 		var err error
@@ -52,7 +49,7 @@ func LoadTemplates(cfg *model.Config, commandLineTemplates string) ([]*model.Tpl
 		defer os.RemoveAll(templatePath)
 	}
 
-	return loadTemplatesFromPath(templatePath, cfg)
+	return loadFilesFromPath(templatePath, cfg)
 }
 
 func isGitHubURL(url string) bool {
@@ -81,7 +78,7 @@ func cloneGitHubRepo(url string) (string, error) {
 
 	cloneURL := fmt.Sprintf("https://github.com/%s/%s.git", owner, repo)
 	cmd := exec.Command("git", "clone", "--branch", branch, "--depth", "1", cloneURL, tmpDir)
-	cmd.Stdout = os.Stdout
+	cmd.Stdout = nil
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
 		return "", fmt.Errorf("failed to clone repository: %v", err)
@@ -93,10 +90,11 @@ func cloneGitHubRepo(url string) (string, error) {
 	return tmpDir, nil
 }
 
-func loadTemplatesFromPath(path string, cfg *model.Config) ([]*model.Tpl, error) {
-	var templates []*model.Tpl
+func loadFilesFromPath(rootPath string, cfg *model.Config) ([]*model.File, error) {
 
-	err := filepath.WalkDir(path, func(path string, d fs.DirEntry, err error) error {
+	var templates []*model.File
+
+	err := filepath.WalkDir(rootPath, func(path string, d fs.DirEntry, err error) error {
 		if err != nil || d.IsDir() {
 			return err
 		}
@@ -106,17 +104,31 @@ func loadTemplatesFromPath(path string, cfg *model.Config) ([]*model.Tpl, error)
 			return err
 		}
 
-		content := string(b)
-		template := handlebars.Compile(content)
+		var f model.File
 
-		t := &model.Tpl{
-			TemplateName:      d.Name(),
-			GeneratedFileName: getFileNameTemplate(content, cfg),
-			Source:            content,
-			Template:          template,
+		f.Name = d.Name()
+		rel, err := filepath.Rel(rootPath, path)
+		if err != nil {
+			return err
+		}
+		f.RelativePath = rel
+		f.Content = b
+		f.Type = model.FileTypeNormal
+
+		// template or partial
+		if strings.HasSuffix(d.Name(), ".hbs") || strings.HasSuffix(d.Name(), ".mustache") {
+			content := string(b)
+			output := getFileNameTemplate(content, cfg)
+			if output != "" {
+				f.Type = model.FileTypeTemplate
+				f.Output = output
+			} else {
+				f.Type = model.FileTypePartial
+			}
+			f.Template = handlebars.Compile(content)
 		}
 
-		templates = append(templates, t)
+		templates = append(templates, &f)
 		return nil
 	})
 
@@ -245,4 +257,17 @@ func createRenderContext(cfg *model.Config, dbCfg *model.DatabaseConfig, tbCfg *
 		DatabaseConfig: dbCfg,
 		TableConfig:    tbCfg,
 	}
+}
+
+// WriteFile writes the content to the given file, creating directories if necessary
+func WriteFile(filename string, content []byte) error {
+	dir := filepath.Dir(filename)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return err
+	}
+	err := os.WriteFile(filename, content, 0644)
+	if err != nil {
+		return err
+	}
+	return nil
 }
