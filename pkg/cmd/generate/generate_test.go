@@ -221,6 +221,59 @@ new content 2
 	}
 }
 
+func TestNewCmdGenerate_whenConfigIsSet_thenShouldUsingSpecificConfigFile(t *testing.T) {
+	workDir, err := os.MkdirTemp("", "test")
+	require.NoError(t, err)
+	defer os.RemoveAll(workDir)
+
+	_ = os.Chdir(workDir)
+
+	createNewFile(filepath.Join(workDir, "config/gencoder.yaml"), []byte("templates: tpl"))
+	createNewFile(filepath.Join(workDir, "tpl/test1.text.hbs"), []byte(`@gencoder.generated: test1.txt
+Hello, {{properties.name}}!`))
+
+	cmd := NewCmdGenerate(&model.GlobalOptions{})
+	cmd.SetArgs([]string{"--config", "config/gencoder.yaml", "--properties", "name=World"})
+
+	err = cmd.Execute()
+	require.NoError(t, err)
+
+	content, err := os.ReadFile(filepath.Join(workDir, "test1.txt"))
+	assert.NoError(t, err)
+	assert.Equal(t, `@gencoder.generated: test1.txt
+Hello, World!`, string(content))
+}
+
+func TestNewCmdGenerate_whenImportHelperIsSet_thenShouldRegisterCustomHelpers(t *testing.T) {
+	workDir, err := os.MkdirTemp("", "test")
+	require.NoError(t, err)
+	defer os.RemoveAll(workDir)
+
+	_ = os.Chdir(workDir)
+
+	createNewFile(filepath.Join(workDir, "gencoder.yaml"), []byte(`
+templates: templates
+`))
+	createNewFile(filepath.Join(workDir, "templates/test1.text.hbs"), []byte(`@gencoder.generated: test1.txt
+Hello, {{_toUpperCase properties.name}}!`))
+	createNewFile(filepath.Join(workDir, "helpers.js"), []byte(`
+Handlebars.registerHelper('_toUpperCase', function (target) {
+	return target.toUpperCase();
+});
+`))
+
+	cmd := NewCmdGenerate(&model.GlobalOptions{})
+	cmd.SetArgs([]string{"--config", "gencoder.yaml", "--properties", "name=World", "--import-helper", "helpers.js"})
+
+	err = cmd.Execute()
+	require.NoError(t, err)
+
+	content, err := os.ReadFile(filepath.Join(workDir, "test1.txt"))
+	assert.NoError(t, err)
+	assert.Equal(t, `@gencoder.generated: test1.txt
+Hello, WORLD!`, string(content))
+}
+
 func TestNewCmdGenerate_whenUsingIncludeNonTpl_thenShouldGenerateNonTemplateFiles(t *testing.T) {
 
 	// Create template directory
@@ -280,5 +333,87 @@ Hello, World!`, string(content))
 	assert.NoError(t, err)
 	assert.Equal(t, `@gencoder.generated: foo/test2.txt
 This is a header
+Hello, World!`, string(content))
+}
+
+func TestNewCmdGenerate_whenTemplatesIsSet_thenShouldOverrideTemplatesInConfigFile(t *testing.T) {
+	workDir, err := os.MkdirTemp("", "test")
+	require.NoError(t, err)
+	defer os.RemoveAll(workDir)
+
+	_ = os.Chdir(workDir)
+
+	createNewFile(filepath.Join(workDir, "gencoder.yaml"), []byte(`
+templates: tpl
+`))
+	createNewFile(filepath.Join(workDir, "tpl/test1.text.hbs"), []byte(`@gencoder.generated: test1.txt
+Hello, {{properties.name}}! -- from tpl`))
+	createNewFile(filepath.Join(workDir, "templates/test1.text.hbs"), []byte(`@gencoder.generated: test1.txt
+Hello, {{properties.name}}! -- from templates`))
+
+	cmd := NewCmdGenerate(&model.GlobalOptions{})
+	cmd.SetArgs([]string{"--config", "gencoder.yaml", "--templates", "templates", "--properties", "name=World"})
+
+	err = cmd.Execute()
+	require.NoError(t, err)
+
+	content, err := os.ReadFile(filepath.Join(workDir, "test1.txt"))
+	assert.NoError(t, err)
+	assert.Equal(t, `@gencoder.generated: test1.txt
+Hello, World! -- from templates`, string(content))
+}
+
+func TestNewCmdGenerate_whenPropertiesIsSet_thenShouldOverridePropertiesInConfigFile(t *testing.T) {
+	workDir, err := os.MkdirTemp("", "test")
+	require.NoError(t, err)
+	defer os.RemoveAll(workDir)
+
+	_ = os.Chdir(workDir)
+
+	createNewFile(filepath.Join(workDir, "gencoder.yaml"), []byte(`
+templates: templates
+properties:
+  name: John
+  age: 20
+  height: 180
+`))
+	createNewFile(filepath.Join(workDir, "templates/test1.text.hbs"), []byte(`@gencoder.generated: test1.txt
+Hello, I'm {{properties.name}}, {{properties.age}} years old, and {{properties.height}}cm tall!`))
+
+	cmd := NewCmdGenerate(&model.GlobalOptions{})
+	cmd.SetArgs([]string{"--config", "gencoder.yaml", "--properties", "name=Daniel,height=170"})
+
+	err = cmd.Execute()
+	require.NoError(t, err)
+
+	content, err := os.ReadFile(filepath.Join(workDir, "test1.txt"))
+	assert.NoError(t, err)
+	assert.Equal(t, `@gencoder.generated: test1.txt
+Hello, I'm Daniel, 20 years old, and 170cm tall!`, string(content))
+}
+
+func TestNewCmdGenerate_whenOutputIsSet_thenShouldOverrideOutputInConfigFile(t *testing.T) {
+	workDir, err := os.MkdirTemp("", "test")
+	require.NoError(t, err)
+	defer os.RemoveAll(workDir)
+
+	_ = os.Chdir(workDir)
+
+	createNewFile(filepath.Join(workDir, "gencoder.yaml"), []byte(`
+templates: templates
+output: output
+`))
+	createNewFile(filepath.Join(workDir, "templates/test1.text.hbs"), []byte(`@gencoder.generated: test1.txt
+Hello, {{properties.name}}!`))
+
+	cmd := NewCmdGenerate(&model.GlobalOptions{})
+	cmd.SetArgs([]string{"--config", "gencoder.yaml", "--output", "output2", "--properties", "name=World"})
+
+	err = cmd.Execute()
+	require.NoError(t, err)
+
+	content, err := os.ReadFile(filepath.Join(workDir, "output2/test1.txt"))
+	assert.NoError(t, err)
+	assert.Equal(t, `@gencoder.generated: test1.txt
 Hello, World!`, string(content))
 }
