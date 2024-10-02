@@ -21,11 +21,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "start",
-        "end"
-      ]
+      "type": "object"
     },
     "Config": {
       "properties": {
@@ -70,15 +66,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "templates",
-        "outputMarker",
-        "blockMarker",
-        "databases",
-        "properties",
-        "output"
-      ]
+      "type": "object"
     },
     "DatabaseConfig": {
       "properties": {
@@ -121,11 +109,7 @@
       "additionalProperties": false,
       "type": "object",
       "required": [
-        "name",
-        "dsn",
-        "schema",
-        "properties",
-        "tables"
+        "dsn"
       ]
     },
     "TableConfig": {
@@ -165,10 +149,7 @@
       "additionalProperties": false,
       "type": "object",
       "required": [
-        "schema",
-        "name",
-        "properties",
-        "ignoreColumns"
+        "name"
       ]
     }
   }
