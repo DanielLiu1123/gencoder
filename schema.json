@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/DanielLiu1123/gencoder/tree/main/pkg/model/table.go",
+  "$ref": "#/$defs/Config",
+  "$defs": {
+    "BlockMarker": {
+      "properties": {
+        "start": {
+          "type": "string",
+          "description": "The start marker for code block",
+          "examples": [
+            "@gencoder.block.start:"
+          ]
+        },
+        "end": {
+          "type": "string",
+          "description": "The end marker for code block",
+          "examples": [
+            "@gencoder.block.end:"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "start",
+        "end"
+      ]
+    },
+    "Config": {
+      "properties": {
+        "templates": {
+          "type": "string",
+          "description": "The dir or URL to store templates",
+          "examples": [
+            "templates"
+          ]
+        },
+        "outputMarker": {
+          "type": "string",
+          "description": "The magic comment to identify the generated file",
+          "examples": [
+            "@gencoder.generated:"
+          ]
+        },
+        "blockMarker": {
+          "$ref": "#/$defs/BlockMarker",
+          "description": "The block marker to identify the generated block"
+        },
+        "databases": {
+          "items": {
+            "$ref": "#/$defs/DatabaseConfig"
+          },
+          "type": "array",
+          "description": "The list of databases"
+        },
+        "properties": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object",
+          "description": "The global properties"
+        },
+        "output": {
+          "type": "string",
+          "description": "The output directory for generated files",
+          "examples": [
+            "./output"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "templates",
+        "outputMarker",
+        "blockMarker",
+        "databases",
+        "properties",
+        "output"
+      ]
+    },
+    "DatabaseConfig": {
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the database",
+          "examples": [
+            "mydb"
+          ]
+        },
+        "dsn": {
+          "type": "string",
+          "description": "The database connection string, gencoder uses [xo/dburl](https://github.com/xo/dburl) to provides a uniform way to parse database connections",
+          "examples": [
+            "mysql://user:password@localhost:3306/dbname"
+          ]
+        },
+        "schema": {
+          "type": "string",
+          "description": "The schema of the database",
+          "examples": [
+            "public"
+          ]
+        },
+        "properties": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object",
+          "description": "Properties specific to the database"
+        },
+        "tables": {
+          "items": {
+            "$ref": "#/$defs/TableConfig"
+          },
+          "type": "array",
+          "description": "The list of tables in the database"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "name",
+        "dsn",
+        "schema",
+        "properties",
+        "tables"
+      ]
+    },
+    "TableConfig": {
+      "properties": {
+        "schema": {
+          "type": "string",
+          "description": "The schema of the table",
+          "examples": [
+            "public"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the table",
+          "examples": [
+            "user"
+          ]
+        },
+        "properties": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object",
+          "description": "Properties specific to the table"
+        },
+        "ignoreColumns": {
+          "items": {
+            "type": "string",
+            "examples": [
+              "[password"
+            ]
+          },
+          "type": "array",
+          "description": "The list of columns to ignore"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "schema",
+        "name",
+        "properties",
+        "ignoreColumns"
+      ]
+    }
+  }
+}
