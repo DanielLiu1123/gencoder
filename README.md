@@ -1,6 +1,6 @@
 # Gencoder [![Build Status](https://img.shields.io/github/actions/workflow/status/DanielLiu1123/gencoder/build.yml)](https://github.com/DanielLiu1123/gencoder/actions) [![Go Report Card](https://goreportcard.com/badge/github.com/DanielLiu1123/gencoder)](https://goreportcard.com/report/github.com/DanielLiu1123/gencoder) [![License](https://img.shields.io/github/license/DanielLiu1123/gencoder)](./LICENSE)
 
-A code generator for any language or framework that preserves your changes during regeneration, powered by [Handlebars](https://handlebarsjs.com/).
+A code generator that keeps your changes during regeneration, powered by Handlebars.
 
 ## Table of Contents
 

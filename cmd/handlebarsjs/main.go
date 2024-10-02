@@ -27,6 +27,7 @@ func main() {
 	// Generate helper.gen.go
 	genHelper()
 
+	log.Println("HandlebarsJS and HelperJS generated successfully!")
 }
 
 func genHelper() {

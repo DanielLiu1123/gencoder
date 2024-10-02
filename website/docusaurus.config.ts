@@ -4,7 +4,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
   title: 'Gencoder',
-  tagline: 'A code generator for any language or framework that preserves your changes during regeneration, powered by Handlebars.',
+  tagline: 'A code generator that keeps your changes during regeneration, powered by Handlebars',
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
@@ -57,10 +57,6 @@ const config: Config = {
           position: 'left',
           label: 'Docs',
         },
-        // {
-        //   type: 'localeDropdown',
-        //   position: 'right',
-        // },
         {
           label: 'GitHub',
           href: 'https://github.com/danielliu1123/gencoder',
@@ -68,40 +64,10 @@ const config: Config = {
         },
       ],
     },
-    // algolia: {
-    //   // The application ID provided by Algolia
-    //   appId: 'B5TXVPY7SP',
-    //   // Public API key: it is safe to commit it
-    //   apiKey: 'd1d0662c9bcd12936152178add34706d',
-    //   indexName: 'danielliu1123io',
-    //   // Optional: see doc section below
-    //   contextualSearch: true,
-    //   // Optional: path for search page that enabled by default (`false` to disable it)
-    //   searchPagePath: 'search',
-    // },
     prism: {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula,
-      // additionalLanguages: ['java'],
-      // magicComments: [
-      //   // Remember to extend the default highlight class name as well!
-      //   {
-      //     className: 'theme-code-block-highlighted-line',
-      //     line: 'highlight-next-line',
-      //     block: {start: 'highlight-start', end: 'highlight-end'},
-      //   },
-      //   // Customized
-      //   {
-      //     className: 'code-line-deleted',
-      //     line: 'highlight-next-line-as-deleted',
-      //     block: {start: 'highlight-deleted-start', end: 'highlight-deleted-end'},
-      //   },
-      //   {
-      //     className: 'code-line-added',
-      //     line: 'highlight-next-line-as-added',
-      //     block: {start: 'highlight-added-start', end: 'highlight-added-end'},
-      //   },
-      // ],
+      additionalLanguages: ['java'],
     },
   } satisfies Preset.ThemeConfig,
 };

@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Introduction
 
-A code generator for any language or framework that preserves your changes during regeneration, powered by [Handlebars](https://handlebarsjs.com/).
+A code generator that keeps your changes during regeneration, powered by [Handlebars](https://handlebarsjs.com/).
 
 ## Background
 
@@ -16,3 +16,90 @@ and you have to merge them manually (which is very annoying).
 Gencoder is designed to solve this problem. It can recognize which parts of the file are generated
 and which parts are manually added. When regenerating, it only overwrites the automatically generated parts,
 and the manual parts remain unchanged. No more manual merging.
+
+## Key Concepts
+
+### Blocks
+
+Gencoder uses something called “blocks” to manage generated code. Here’s how it works:
+
+1. Special comments mark the beginning and end of generated code sections.
+2. The code between these comments is considered a block.
+3. When regenerating, Gencoder only overwrites the code inside these blocks.
+4. Code outside the blocks remains unchanged.
+
+A single file can contain multiple blocks, each with a unique identifier (block name). During regeneration, Gencoder only updates blocks with matching IDs.
+
+```java
+public class User {
+
+    // @gencoder.block.start: columns
+    private Long id;
+    private String name;
+    // @gencoder.block.end: columns
+
+    // @gencoder.block.start: methods
+    public Long getId() {
+        // ...
+    }
+
+    public void setId(Long id) {
+        // ...
+    }
+    // @gencoder.block.end: methods
+
+    public void customMethod() {
+        // This is a manually added method
+    }
+}
+```
+
+### Template
+
+Gencoder uses [Handlebars](https://handlebarsjs.com/) as the template engine and supports all its features.
+
+Gencoder only treats two types of files as templates: `.hbs` and `.mustache`. If the content has a `@gencoder.generated:` comment,
+the final generated content will be written into the file.
+
+```handlebars
+// @gencoder.generated: src/main/java/com/example/User.java
+public class User {
+}
+```
+
+You can use variables after `@gencoder.generated:`:
+
+```handlebars
+// @gencoder.generated: src/main/java/com/example/{{_uppercase table.name}}.java
+public class {{_uppercase table.name}} {
+}
+```
+
+This way, the file name will change dynamically based on the table name.
+
+If there is no `@gencoder.generated:` comment, the file is treated as a **partial** file and can be used in other templates.
+
+```handlebars title="type.partial.hbs"
+{{~#if (_match 'varchar\(\d+\)|char|tinytext|text|mediumtext|longtext|enum.*' columnType)}}String
+{{~else if (_match 'bigint' columnType)}}Long
+{{~else if (_match 'int|integer|mediumint' columnType)}}Integer
+{{~else}}Object
+{{~/if}}
+```
+
+```handlebars title="entity.java.hbs"
+// @gencoder.generated: src/main/java/com/example/{{_uppercase table.name}}.java
+
+@lombok.Data
+public class {{_uppercase table.name}} {
+    {{#each table.columns}}
+    private {{> "type.partial.hbs" columnType=type}} {{_snakeCase column.name}};
+    {{/each}}
+}
+```
+
+## Configuration
+
+Full configuration: [config.go](https://github.com/DanielLiu1123/gencoder/tree/main/pkg/model/table.go).
+
+Download the JSON schema: [schema.json](https://raw.githubusercontent.com/DanielLiu1123/gencoder/refs/heads/main/schema.json).
