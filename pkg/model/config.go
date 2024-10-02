@@ -21,7 +21,7 @@ type TableConfig struct {
 	Schema        string            `json:"schema" yaml:"schema" jsonschema:"description=The schema of the table,example=public"`
 	Name          string            `json:"name" yaml:"name" jsonschema:"description=The name of the table,example=user,required"`
 	Properties    map[string]string `json:"properties" yaml:"properties" jsonschema:"description=Properties specific to the table"`
-	IgnoreColumns []string          `json:"ignoreColumns" yaml:"ignoreColumns" jsonschema:"description=The list of columns to ignore,example=[password,secret]"`
+	IgnoreColumns []string          `json:"ignoreColumns" yaml:"ignoreColumns" jsonschema:"description=The list of columns to ignore,example=password"`
 }
 
 type BlockMarker struct {

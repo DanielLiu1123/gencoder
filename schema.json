@@ -155,7 +155,7 @@
           "items": {
             "type": "string",
             "examples": [
-              "[password"
+              "password"
             ]
           },
           "type": "array",
