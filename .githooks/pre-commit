@@ -7,9 +7,6 @@ go fmt ./...
 golangci-lint run
 echo 'Linting done!'
 
-# generate handlebarsjs
-go run cmd/handlebarsjs/main.go
-
 # generate json schema
 go run cmd/jsonschema/main.go
 
