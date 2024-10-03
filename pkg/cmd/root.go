@@ -20,6 +20,12 @@ func NewCmdRoot(buildInfo *model.BuildInfo) *cobra.Command {
 		Example: `  # Generate code from config file (default: gencoder.yaml)
   $ gencoder generate -f gencoder.yaml
 
+  # Generate code from a template project with custom properties
+  $ gencoder generate --templates "https://github.com/user/template-project" --properties "package=com.example,author=Freeman" --include-non-tpl
+
+  # Generate code using custom helpers, read from local file or URL
+  $ gencoder generate --import-helper helpers.js
+
   # Init basic config for quick start
   $ gencoder init
 

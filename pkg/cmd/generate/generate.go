@@ -45,7 +45,7 @@ func NewCmdGenerate(globalOptions *model.GlobalOptions) *cobra.Command {
   $ gencoder generate -f myconfig.yaml --import-helper helpers.js
 
   # Generate boilerplate code from URL with custom properties
-  $ gencoder generate --templates "https://github.com/DanielLiu1123/gencoder/tree/main/templates" --properties="package=com.example,author=Freeman"
+  $ gencoder generate --templates "https://github.com/user/template-project" --properties="package=com.example,author=Freeman"
 `,
 		PreRun: func(cmd *cobra.Command, args []string) {
 			validateArgs(args)
