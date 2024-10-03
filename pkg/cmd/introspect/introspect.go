@@ -20,7 +20,7 @@ func NewCmdIntrospect(globalOptions *model.GlobalOptions) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "introspect",
-		Short:   "introspect command is used to output the table metadata information for the given configuration.",
+		Short:   "Print the table metadata for the given configuration",
 		Aliases: []string{"intro", "i"},
 		Example: `
   # Print metadata of database tables from default config file (gencoder.yaml)

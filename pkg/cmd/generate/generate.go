@@ -33,7 +33,7 @@ func NewCmdGenerate(globalOptions *model.GlobalOptions) *cobra.Command {
 
 	c := &cobra.Command{
 		Use:     "generate",
-		Short:   "Generate code from database configuration",
+		Short:   "Generate code from templates and database table metadata",
 		Aliases: []string{"gen", "g"},
 		Example: `
   # Generate code from config file (default: gencoder.yaml), config json schema: https://raw.githubusercontent.com/DanielLiu1123/gencoder/refs/heads/main/schema.json

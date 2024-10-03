@@ -15,8 +15,8 @@ func NewCmdRoot(buildInfo *model.BuildInfo) *cobra.Command {
 	c := &cobra.Command{
 		Use:     "gencoder",
 		Version: buildInfo.Version,
-		Short:   "The ultimate code generator",
-		Long:    "gencoder is a code generator that generates code from templates/databases, for any languages/frameworks.",
+		Short:   "A code generator that keeps your changes during regeneration.",
+		Long:    "A code generator that keeps your changes during regeneration, powered by Handlebars.",
 		Example: `
   # Generate code from config file (default: gencoder.yaml), config json schema: https://raw.githubusercontent.com/DanielLiu1123/gencoder/refs/heads/main/schema.json
   $ gencoder generate -f gencoder.yaml
