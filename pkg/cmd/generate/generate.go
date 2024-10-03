@@ -35,18 +35,15 @@ func NewCmdGenerate(globalOptions *model.GlobalOptions) *cobra.Command {
 		Use:     "generate",
 		Short:   "Generate code from database configuration",
 		Aliases: []string{"gen", "g"},
-		Example: `  # Generate code from default config file (gencoder.yaml)
-  $ gencoder generate
+		Example: `
+  # Generate code from config file (default: gencoder.yaml), config json schema: https://raw.githubusercontent.com/DanielLiu1123/gencoder/refs/heads/main/schema.json
+  $ gencoder generate -f gencoder.yaml
 
-  # Generate code from a specific config file
-  $ gencoder generate -f myconfig.yaml
-
-  # Generate code with custom import helper JavaScript file
-  $ gencoder generate -f myconfig.yaml --import-helper helpers.js
-
-  # Generate boilerplate code from URL with custom properties
-  $ gencoder generate --templates "https://github.com/user/template-project" --properties="package=com.example,author=Freeman"
-`,
+  # Generate code from a template project with custom properties
+  $ gencoder generate --templates "https://github.com/user/template-project" --properties "package=com.example,author=Freeman" --include-non-tpl
+  
+  # Generate code using custom helpers, build-in helpers: https://github.com/DanielLiu1123/gencoder/blob/main/pkg/jsruntime/helper.js
+  $ gencoder generate --import-helper helpers.js`,
 		PreRun: func(cmd *cobra.Command, args []string) {
 			validateArgs(args)
 			opt.Properties = parseProperties(props)

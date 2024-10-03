@@ -17,13 +17,14 @@ func NewCmdRoot(buildInfo *model.BuildInfo) *cobra.Command {
 		Version: buildInfo.Version,
 		Short:   "The ultimate code generator",
 		Long:    "gencoder is a code generator that generates code from templates/databases, for any languages/frameworks.",
-		Example: `  # Generate code from config file (default: gencoder.yaml)
+		Example: `
+  # Generate code from config file (default: gencoder.yaml), config json schema: https://raw.githubusercontent.com/DanielLiu1123/gencoder/refs/heads/main/schema.json
   $ gencoder generate -f gencoder.yaml
 
   # Generate code from a template project with custom properties
   $ gencoder generate --templates "https://github.com/user/template-project" --properties "package=com.example,author=Freeman" --include-non-tpl
-
-  # Generate code using custom helpers, read from local file or URL
+  
+  # Generate code using custom helpers, build-in helpers: https://github.com/DanielLiu1123/gencoder/blob/main/pkg/jsruntime/helper.js
   $ gencoder generate --import-helper helpers.js
 
   # Init basic config for quick start

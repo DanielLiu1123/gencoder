@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/DanielLiu1123/gencoder/tree/main/pkg/model/table.go",
+  "$id": "https://github.com/DanielLiu1123/gencoder/blob/main/pkg/model/config.go",
   "$ref": "#/$defs/Config",
   "$defs": {
     "BlockMarker": {

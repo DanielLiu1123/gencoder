@@ -12,7 +12,7 @@ const jsonschemaFile = "schema.json"
 //go:generate sh -c "cd ../../ && go run cmd/jsonschema/main.go"
 func main() {
 	schema := jsonschema.Reflect(&model.Config{})
-	schema.ID = "https://github.com/DanielLiu1123/gencoder/tree/main/pkg/model/table.go"
+	schema.ID = "https://github.com/DanielLiu1123/gencoder/blob/main/pkg/model/config.go"
 
 	err := util.WriteFile(jsonschemaFile, []byte(util.ToJson(schema)))
 	if err != nil {
