@@ -21,7 +21,7 @@ func TestGenMssqlTable(t *testing.T) {
 
 	ctx := context.Background()
 	mssqlContainer, err := mssql.Run(ctx,
-		"mcr.microsoft.com/mssql/server:latest",
+		"mcr.microsoft.com/mssql/server:2022-latest",
 		mssql.WithAcceptEULA(),
 		mssql.WithPassword("Sa123456.."),
 	)

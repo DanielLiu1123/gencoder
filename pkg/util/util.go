@@ -218,11 +218,14 @@ func getSchema(tbCfg *model.TableConfig, dbCfg *model.DatabaseConfig, u *dburl.U
 	if u.Driver == "mysql" {
 		arr := strings.Split(u.Path, "/")
 		if len(arr) > 1 {
-			return arr[1]
+			return arr[1] // database name as schema in MySQL
 		}
 	}
 	if u.Driver == "postgres" {
-		return "public"
+		return "public" // default schema in PostgreSQL
+	}
+	if u.Driver == "sqlserver" {
+		return "dbo" // default schema in SQL Server
 	}
 	return ""
 }
@@ -233,6 +236,8 @@ func generateTable(conn *sql.DB, driver, schema string, tbCfg *model.TableConfig
 		return db.GenMySQLTable(context.Background(), conn, schema, tbCfg.Name, tbCfg.IgnoreColumns)
 	case "postgres":
 		return db.GenPostgresTable(context.Background(), conn, schema, tbCfg.Name, tbCfg.IgnoreColumns)
+	case "sqlserver":
+		return db.GenMssqlTable(context.Background(), conn, schema, tbCfg.Name, tbCfg.IgnoreColumns)
 	default:
 		return nil, fmt.Errorf("unsupported driver: %s", driver)
 	}

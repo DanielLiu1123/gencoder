@@ -25,3 +25,14 @@ databases:
       - name: 'user'
         ignoreColumns:
           - deleted_at
+  - name: mssql
+    dsn: 'mssql://sa:Sa123456..@localhost:1433/testdb?encrypt=disable'
+    schema: dbo
+    properties:
+      entityPkg: com.example.entity.mssql
+      mapperPkg: com.example.mapper.mssql
+      dynamicSQLPkg: com.example.mapper.mssql
+    tables:
+      - name: 'user'
+        ignoreColumns:
+          - deleted_at

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/DanielLiu1123/gencoder/pkg/model"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go/modules/mysql"
@@ -12,8 +13,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"testing"
-
-	_ "github.com/go-sql-driver/mysql"
 )
 
 func TestReadConfig(t *testing.T) {
@@ -150,4 +149,79 @@ func TestCollectRenderContexts(t *testing.T) {
 	assert.Len(t, contexts[0].Properties, 2)
 	assert.Equal(t, "v01", contexts[0].Properties["k1"])
 	assert.Equal(t, "v2", contexts[0].Properties["k2"])
+}
+
+func Test_getSchema_whenDBUsingMySQL(t *testing.T) {
+	d := &model.DatabaseConfig{
+		Name:       "mysql",
+		Dsn:        "mysql://user:password@localhost:3306/dbname",
+		Properties: map[string]string{},
+		Tables: []*model.TableConfig{
+			{
+				Name: "user1",
+			},
+			{
+				Schema: "schema1",
+				Name:   "user2",
+			},
+		},
+	}
+	u, err := dburl.Parse(d.Dsn)
+	require.NoError(t, err)
+
+	schema := getSchema(d.Tables[0], d, u)
+	assert.Equal(t, "dbname", schema) // MySQL uses the database name as the schema.
+
+	schema = getSchema(d.Tables[1], d, u)
+	assert.Equal(t, "schema1", schema)
+}
+
+func Test_getSchema_whenDBUsingPostgres(t *testing.T) {
+	d := &model.DatabaseConfig{
+		Name:       "postgres",
+		Dsn:        "postgres://user:password@localhost:5432/dbname",
+		Properties: map[string]string{},
+		Tables: []*model.TableConfig{
+			{
+				Name: "user1",
+			},
+			{
+				Schema: "schema1",
+				Name:   "user2",
+			},
+		},
+	}
+	u, err := dburl.Parse(d.Dsn)
+	require.NoError(t, err)
+
+	schema := getSchema(d.Tables[0], d, u)
+	assert.Equal(t, "public", schema) // Default schema in PostgreSQL is "public" if not specified.
+
+	schema = getSchema(d.Tables[1], d, u)
+	assert.Equal(t, "schema1", schema)
+}
+
+func Test_getSchema_whenDBUsingMSSQL(t *testing.T) {
+	d := &model.DatabaseConfig{
+		Name:       "mssql",
+		Dsn:        "mssql://user:password@localhost:1433/dbname",
+		Properties: map[string]string{},
+		Tables: []*model.TableConfig{
+			{
+				Name: "user1",
+			},
+			{
+				Schema: "schema1",
+				Name:   "user2",
+			},
+		},
+	}
+	u, err := dburl.Parse(d.Dsn)
+	require.NoError(t, err)
+
+	schema := getSchema(d.Tables[0], d, u)
+	assert.Equal(t, "dbo", schema) // Default schema in MSSQL is "dbo" if not specified.
+
+	schema = getSchema(d.Tables[1], d, u)
+	assert.Equal(t, "schema1", schema)
 }
