@@ -12,6 +12,7 @@ require (
 	github.com/sijms/go-ora/v2 v2.8.21
 	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.9.0
+	github.com/testcontainers/testcontainers-go/modules/mssql v0.33.0
 	github.com/testcontainers/testcontainers-go/modules/mysql v0.33.0
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.33.0
 	github.com/xo/dburl v0.23.2

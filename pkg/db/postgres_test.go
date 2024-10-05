@@ -44,30 +44,30 @@ func TestGenPostgresTable(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = db.Exec(`CREATE TABLE testdb.public."user" (
-    id SERIAL PRIMARY KEY,
-    username VARCHAR(64) NOT NULL,
-    password VARCHAR(128) NOT NULL,
-    email VARCHAR(128) NOT NULL DEFAULT '',
-    first_name VARCHAR(64),
-    last_name VARCHAR(64),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    status VARCHAR(9) DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'suspended')),
-    deleted_at TIMESTAMP,
-    CONSTRAINT unique_email UNIQUE (email)
-);
-CREATE INDEX idx_name ON testdb.public."user" (username);
-CREATE INDEX idx_status_created ON testdb.public."user" (status, created_at);
-CREATE INDEX idx_full_name ON testdb.public."user" (first_name, last_name);
-COMMENT ON COLUMN testdb.public."user".username IS 'Username, required';
-COMMENT ON COLUMN testdb.public."user".email IS 'User email, required';
-COMMENT ON COLUMN testdb.public."user".first_name IS 'First name of the user';
-COMMENT ON COLUMN testdb.public."user".last_name IS 'Last name of the user';
-COMMENT ON COLUMN testdb.public."user".created_at IS 'Record creation timestamp';
-COMMENT ON COLUMN testdb.public."user".updated_at IS 'Record update timestamp';
-COMMENT ON COLUMN testdb.public."user".status IS 'Account status';
-COMMENT ON COLUMN testdb.public."user".deleted_at IS 'Record deletion timestamp';
-COMMENT ON TABLE testdb.public."user" IS 'User account information';`)
+		id SERIAL PRIMARY KEY,
+		username VARCHAR(64) NOT NULL,
+		password VARCHAR(128) NOT NULL,
+		email VARCHAR(128) NOT NULL DEFAULT '',
+		first_name VARCHAR(64),
+		last_name VARCHAR(64),
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		status VARCHAR(9) DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'suspended')),
+		deleted_at TIMESTAMP,
+		CONSTRAINT unique_email UNIQUE (email)
+	);
+	CREATE INDEX idx_name ON testdb.public."user" (username);
+	CREATE INDEX idx_status_created ON testdb.public."user" (status, created_at);
+	CREATE INDEX idx_full_name ON testdb.public."user" (first_name, last_name);
+	COMMENT ON COLUMN testdb.public."user".username IS 'Username, required';
+	COMMENT ON COLUMN testdb.public."user".email IS 'User email, required';
+	COMMENT ON COLUMN testdb.public."user".first_name IS 'First name of the user';
+	COMMENT ON COLUMN testdb.public."user".last_name IS 'Last name of the user';
+	COMMENT ON COLUMN testdb.public."user".created_at IS 'Record creation timestamp';
+	COMMENT ON COLUMN testdb.public."user".updated_at IS 'Record update timestamp';
+	COMMENT ON COLUMN testdb.public."user".status IS 'Account status';
+	COMMENT ON COLUMN testdb.public."user".deleted_at IS 'Record deletion timestamp';
+	COMMENT ON TABLE testdb.public."user" IS 'User account information';`)
 	require.NoError(t, err)
 
 	schema := "public"
