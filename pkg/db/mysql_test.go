@@ -77,4 +77,13 @@ func TestGenMySQLTable(t *testing.T) {
 	assert.Equal(t, false, tb.Columns[1].IsPrimaryKey)
 
 	assert.Equal(t, 5, len(tb.Indexes))
+	assert.Equal(t, "PRIMARY", tb.Indexes[0].Name)   // Primary key
+	assert.Equal(t, "idx_email", tb.Indexes[1].Name) // Unique index
+	assert.Equal(t, "idx_full_name", tb.Indexes[2].Name)
+	assert.Equal(t, "first_name", tb.Indexes[2].Columns[0].Name)
+	assert.Equal(t, "last_name", tb.Indexes[2].Columns[1].Name)
+	assert.Equal(t, "idx_name", tb.Indexes[3].Name)
+	assert.Equal(t, "idx_status_created", tb.Indexes[4].Name)
+	assert.Equal(t, "status", tb.Indexes[4].Columns[0].Name)
+	assert.Equal(t, "created_at", tb.Indexes[4].Columns[1].Name)
 }
