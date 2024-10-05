@@ -37,7 +37,7 @@ func TestGenMssqlTable(t *testing.T) {
 	port, err := mssqlContainer.MappedPort(ctx, "1433")
 	require.NoError(t, err)
 
-	dsn := fmt.Sprintf("mssql://sa:Sa123456..@%s:%s/master", host, port.Port())
+	dsn := fmt.Sprintf("mssql://sa:Sa123456..@%s:%s/master?encrypt=disable", host, port.Port())
 	db, err := dburl.Open(dsn)
 	require.NoError(t, err)
 
