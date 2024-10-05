@@ -58,31 +58,31 @@ func getMssqlTableInfo(ctx context.Context, db *sql.DB, schema, name string) (*m
 
 func getMssqlColumnsInfo(ctx context.Context, db *sql.DB, schema, name string, ignoreColumns []string) ([]*model.Column, error) {
 	const columnsSql = `
-SELECT 
-    c.column_id AS ordinal,
-    c.name AS column_name,
-    tp.name AS data_type,
-    c.is_nullable AS is_nullable,
-    dc.definition AS default_value,
-    CASE 
-        WHEN EXISTS (
-            SELECT 1
-            FROM sys.index_columns ic
-            JOIN sys.indexes i ON ic.index_id = i.index_id
-            WHERE ic.object_id = c.object_id AND ic.column_id = c.column_id AND i.is_primary_key = 1
-        ) 
-        THEN 1 ELSE 0 
-    END AS is_primary,
-    ep.value AS comment
-FROM sys.columns c
-JOIN sys.types tp ON c.user_type_id = tp.user_type_id
-JOIN sys.tables t ON c.object_id = t.object_id
-JOIN sys.schemas s ON t.schema_id = s.schema_id
-LEFT JOIN sys.default_constraints dc ON c.default_object_id = dc.object_id
-LEFT JOIN sys.extended_properties ep ON ep.major_id = c.object_id AND ep.minor_id = c.column_id AND ep.name = 'MS_Description'
-WHERE s.name = @p1
-  AND t.name = @p2
-ORDER BY c.column_id;
+		SELECT 
+			c.column_id AS ordinal,
+			c.name AS column_name,
+			tp.name AS data_type,
+			c.is_nullable AS is_nullable,
+			dc.definition AS default_value,
+			CASE 
+				WHEN EXISTS (
+					SELECT 1
+					FROM sys.index_columns ic
+					JOIN sys.indexes i ON ic.index_id = i.index_id
+					WHERE ic.object_id = c.object_id AND ic.column_id = c.column_id AND i.is_primary_key = 1
+				) 
+				THEN 1 ELSE 0 
+			END AS is_primary,
+			ep.value AS comment
+		FROM sys.columns c
+		JOIN sys.types tp ON c.user_type_id = tp.user_type_id
+		JOIN sys.tables t ON c.object_id = t.object_id
+		JOIN sys.schemas s ON t.schema_id = s.schema_id
+		LEFT JOIN sys.default_constraints dc ON c.default_object_id = dc.object_id
+		LEFT JOIN sys.extended_properties ep ON ep.major_id = c.object_id AND ep.minor_id = c.column_id AND ep.name = 'MS_Description'
+		WHERE s.name = @p1
+		  AND t.name = @p2
+		ORDER BY c.column_id;
 	`
 	rows, err := db.QueryContext(ctx, columnsSql, schema, name)
 	if err != nil {
@@ -118,7 +118,7 @@ func getMssqlIndexesInfo(ctx context.Context, db *sql.DB, schema, name string) (
 		WHERE s.name = @p1
 		  AND t.name = @p2
 		ORDER BY i.name, ic.key_ordinal;
-	`
+`
 	rows, err := db.QueryContext(ctx, indexesSql, schema, name)
 	if err != nil {
 		return nil, err

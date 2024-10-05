@@ -37,49 +37,46 @@ func TestGenMssqlTable(t *testing.T) {
 	port, err := mssqlContainer.MappedPort(ctx, "1433")
 	require.NoError(t, err)
 
-	dsn := fmt.Sprintf("sqlserver://sa:Sa123456..@%s:%s?database=master", host, port.Port())
+	dsn := fmt.Sprintf("mssql://sa:Sa123456..@%s:%s/master", host, port.Port())
 	db, err := dburl.Open(dsn)
 	require.NoError(t, err)
 
 	// Create table and indexes in MSSQL
-	_, err = db.Exec(`
-CREATE TABLE master.dbo.[user]
-(
-    id         INT IDENTITY (1,1) PRIMARY KEY,
-    username   NVARCHAR(64)  NOT NULL,
-    password   NVARCHAR(128) NOT NULL,
-    email      NVARCHAR(128) NOT NULL DEFAULT '',
-    first_name NVARCHAR(64),
-    last_name  NVARCHAR(64),
-    created_at DATETIME               DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME               DEFAULT CURRENT_TIMESTAMP,
-    status     NVARCHAR(9)            DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'suspended')),
-    deleted_at DATETIME      NULL,
-    CONSTRAINT unique_email UNIQUE (email)
-);
-CREATE INDEX idx_name ON master.dbo.[user] (username);
-CREATE INDEX idx_status_created ON master.dbo.[user] (status, created_at);
-CREATE INDEX idx_full_name ON master.dbo.[user] (first_name, last_name);
-
--- Add comments
-EXEC sp_addextendedproperty
-     @name = N'MS_Description',
-     @value = N'User account information',
-     @level0type = N'SCHEMA', @level0name = 'dbo',
-     @level1type = N'TABLE', @level1name = 'user';
-EXEC sp_addextendedproperty
-     @name = N'MS_Description',
-     @value = N'Username, required',
-     @level0type = N'SCHEMA', @level0name = 'dbo',
-     @level1type = N'TABLE', @level1name = 'user',
-     @level2type = N'COLUMN', @level2name = 'username';
-EXEC sp_addextendedproperty
-     @name = N'MS_Description',
-     @value = N'User email, required',
-     @level0type = N'SCHEMA', @level0name = 'dbo',
-     @level1type = N'TABLE', @level1name = 'user',
-     @level2type = N'COLUMN', @level2name = 'email';
-`)
+	_, err = db.Exec(`CREATE TABLE master.dbo.[user] (
+		id         INT IDENTITY (1,1) PRIMARY KEY,
+		username   NVARCHAR(64)  NOT NULL,
+		password   NVARCHAR(128) NOT NULL,
+		email      NVARCHAR(128) NOT NULL DEFAULT '',
+		first_name NVARCHAR(64),
+		last_name  NVARCHAR(64),
+		created_at DATETIME               DEFAULT CURRENT_TIMESTAMP,
+		updated_at DATETIME               DEFAULT CURRENT_TIMESTAMP,
+		status     NVARCHAR(9)            DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'suspended')),
+		deleted_at DATETIME      NULL,
+		CONSTRAINT unique_email UNIQUE (email)
+	);
+	CREATE INDEX idx_name ON master.dbo.[user] (username);
+	CREATE INDEX idx_status_created ON master.dbo.[user] (status, created_at);
+	CREATE INDEX idx_full_name ON master.dbo.[user] (first_name, last_name);
+	
+	-- Add comments
+	EXEC sp_addextendedproperty
+		 @name = N'MS_Description',
+		 @value = N'User account information',
+		 @level0type = N'SCHEMA', @level0name = 'dbo',
+		 @level1type = N'TABLE', @level1name = 'user';
+	EXEC sp_addextendedproperty
+		 @name = N'MS_Description',
+		 @value = N'Username, required',
+		 @level0type = N'SCHEMA', @level0name = 'dbo',
+		 @level1type = N'TABLE', @level1name = 'user',
+		 @level2type = N'COLUMN', @level2name = 'username';
+	EXEC sp_addextendedproperty
+		 @name = N'MS_Description',
+		 @value = N'User email, required',
+		 @level0type = N'SCHEMA', @level0name = 'dbo',
+		 @level1type = N'TABLE', @level1name = 'user',
+		 @level2type = N'COLUMN', @level2name = 'email';`)
 	require.NoError(t, err)
 
 	// Call the GenMssqlTable function to generate the table model
