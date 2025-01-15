@@ -3,7 +3,7 @@ module github.com/DanielLiu1123/gencoder
 go 1.23.2
 
 require (
-	github.com/dop251/goja v0.0.0-20241024094426-79f3a7efcdbd
+	github.com/dop251/goja v0.0.0-20250114131315-46d383d606d3
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/invopop/jsonschema v0.13.0
 	github.com/lib/pq v1.10.9
