@@ -15,7 +15,7 @@ require (
 	github.com/testcontainers/testcontainers-go/modules/mssql v0.33.0
 	github.com/testcontainers/testcontainers-go/modules/mysql v0.33.0
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.33.0
-	github.com/xo/dburl v0.23.3
+	github.com/xo/dburl v0.23.4
 	gopkg.in/yaml.v3 v3.0.1
 )
 
