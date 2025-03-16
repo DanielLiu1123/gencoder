@@ -61,7 +61,7 @@ func getPostgresColumnsInfo(ctx context.Context, db *sql.DB, schema, name string
 		SELECT a.attnum                             AS ordinal,
 			   a.attname                            AS column_name,
 			   format_type(a.atttypid, a.atttypmod) AS data_type,
-			   a.attnotnull                         AS not_null,
+			   NOT a.attnotnull                     AS is_nullable,
 			   pg_get_expr(ad.adbin, ad.adrelid)    AS default_value,
 			   COALESCE(ct.contype = 'p', false)    AS is_primary,
 			   d.description                        AS comment
