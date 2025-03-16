@@ -83,7 +83,10 @@ func TestGenPostgresTable(t *testing.T) {
 
 	assert.Equal(t, 9, len(tb.Columns))
 	assert.Equal(t, true, tb.Columns[0].IsPrimaryKey)
+	assert.Equal(t, false, tb.Columns[0].IsNullable)
 	assert.Equal(t, false, tb.Columns[1].IsPrimaryKey)
+	assert.Equal(t, "first_name", tb.Columns[4].Name)
+	assert.Equal(t, true, tb.Columns[4].IsNullable)
 
 	assert.Equal(t, 5, len(tb.Indexes))
 	assert.Equal(t, "user_pkey", tb.Indexes[0].Name)    // Primary key
