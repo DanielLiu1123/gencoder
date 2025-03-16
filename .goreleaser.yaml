@@ -13,7 +13,7 @@ builds:
       - arm64
 
 archives:
-  - format: tar.gz
+  - formats: [ 'tar.gz' ]
     files:
       - none* # https://goreleaser.com/customization/archive/#packaging-only-the-binaries
     # this name template makes the OS and Arch compatible with the results of `uname`.
@@ -27,7 +27,7 @@ archives:
     # use zip for windows archives
     format_overrides:
       - goos: windows
-        format: zip
+        formats: [ 'zip' ]
 
 # https://goreleaser.com/customization/release/#github
 release:

@@ -1,6 +1,6 @@
 module github.com/DanielLiu1123/gencoder
 
-go 1.23.2
+go 1.24.1
 
 require (
 	github.com/dop251/goja v0.0.0-20250309171923-bcd7cc6bf64c
