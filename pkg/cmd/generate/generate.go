@@ -43,7 +43,7 @@ func NewCmdGenerate(globalOptions *model.GlobalOptions) *cobra.Command {
   $ gencoder generate --templates "https://github.com/user/template-project" --properties "package=com.example,author=Freeman" --include-non-tpl
   
   # Generate code using custom helpers, build-in helpers: https://github.com/DanielLiu1123/gencoder/blob/main/pkg/jsruntime/helper.js
-  $ gencoder generate --import-helper helpers.js`,
+  $ gencoder generate --import-helpers helpers.js`,
 		PreRun: func(cmd *cobra.Command, args []string) {
 			validateArgs(args)
 			opt.Properties = parseProperties(props)
