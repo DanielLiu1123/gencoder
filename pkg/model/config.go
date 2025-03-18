@@ -7,6 +7,7 @@ type Config struct {
 	Databases    []*DatabaseConfig `json:"databases,omitempty" yaml:"databases,omitempty" jsonschema:"description=The list of databases"`
 	Properties   map[string]string `json:"properties,omitempty" yaml:"properties,omitempty" jsonschema:"description=The global properties,will be overridden by properties in databases and tables"`
 	Output       string            `json:"output,omitempty" yaml:"output,omitempty" jsonschema:"description=The output directory for generated files,example=./output"`
+	ImportHelper []string          `json:"importHelper,omitempty" yaml:"importHelper,omitempty" jsonschema:"description=The list of helper JavaScript files"`
 }
 
 type DatabaseConfig struct {

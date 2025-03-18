@@ -126,6 +126,10 @@ func run(_ *cobra.Command, _ []string, opt *generateOptions, _ *model.GlobalOpti
 
 	mergeCmdOptionsToConfig(cfg, opt)
 
+	for _, helper := range cfg.ImportHelper {
+		registerCustomHelpers(helper)
+	}
+
 	files, err := util.LoadFiles(cfg)
 	if err != nil {
 		log.Fatal(err)
