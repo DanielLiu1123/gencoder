@@ -1,13 +1,13 @@
 package model
 
 type Config struct {
-	Templates    string            `json:"templates,omitempty" yaml:"templates,omitempty" jsonschema:"description=The dir or URL to store templates,example=templates"`
-	OutputMarker string            `json:"outputMarker,omitempty" yaml:"outputMarker,omitempty" jsonschema:"description=The magic comment to identify the generated file,example=@gencoder.generated:"`
-	BlockMarker  BlockMarker       `json:"blockMarker,omitempty" yaml:"blockMarker,omitempty" jsonschema:"description=The block marker to identify the generated block"`
-	Databases    []*DatabaseConfig `json:"databases,omitempty" yaml:"databases,omitempty" jsonschema:"description=The list of databases"`
-	Properties   map[string]string `json:"properties,omitempty" yaml:"properties,omitempty" jsonschema:"description=The global properties,will be overridden by properties in databases and tables"`
-	Output       string            `json:"output,omitempty" yaml:"output,omitempty" jsonschema:"description=The output directory for generated files,example=./output"`
-	ImportHelper []string          `json:"importHelper,omitempty" yaml:"importHelper,omitempty" jsonschema:"description=The list of helper JavaScript files"`
+	Templates     string            `json:"templates,omitempty" yaml:"templates,omitempty" jsonschema:"description=The dir or URL to store templates,example=templates"`
+	OutputMarker  string            `json:"outputMarker,omitempty" yaml:"outputMarker,omitempty" jsonschema:"description=The magic comment to identify the generated file,example=@gencoder.generated:"`
+	BlockMarker   BlockMarker       `json:"blockMarker,omitempty" yaml:"blockMarker,omitempty" jsonschema:"description=The block marker to identify the generated block"`
+	Databases     []*DatabaseConfig `json:"databases,omitempty" yaml:"databases,omitempty" jsonschema:"description=The list of databases"`
+	Properties    map[string]string `json:"properties,omitempty" yaml:"properties,omitempty" jsonschema:"description=The global properties,will be overridden by properties in databases and tables"`
+	Output        string            `json:"output,omitempty" yaml:"output,omitempty" jsonschema:"description=The output directory for generated files,example=./output"`
+	ImportHelpers []string          `json:"importHelpers,omitempty" yaml:"importHelpers,omitempty" jsonschema:"description=The list of helper JavaScript files"`
 }
 
 type DatabaseConfig struct {

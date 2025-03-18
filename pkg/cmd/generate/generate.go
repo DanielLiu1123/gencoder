@@ -18,7 +18,7 @@ import (
 
 type generateOptions struct {
 	config        string
-	importHelper  string
+	importHelpers []string
 	includeNonTpl bool
 
 	// Override config file gencoder.yaml
@@ -47,9 +47,6 @@ func NewCmdGenerate(globalOptions *model.GlobalOptions) *cobra.Command {
 		PreRun: func(cmd *cobra.Command, args []string) {
 			validateArgs(args)
 			opt.Properties = parseProperties(props)
-			if opt.importHelper != "" {
-				registerCustomHelpers(opt.importHelper)
-			}
 		},
 		Run: func(cmd *cobra.Command, args []string) {
 			run(cmd, args, opt, globalOptions)
@@ -57,7 +54,7 @@ func NewCmdGenerate(globalOptions *model.GlobalOptions) *cobra.Command {
 	}
 
 	c.Flags().StringVarP(&opt.config, "config", "f", globalOptions.Config, "Config file to use")
-	c.Flags().StringVarP(&opt.importHelper, "import-helper", "i", "", "Import helper JavaScript file, can be URL ([http|https]://...) or file path")
+	c.Flags().StringSliceVarP(&opt.importHelpers, "import-helpers", "i", []string{}, "Import helper JavaScript file, can be URL ([http|https]://...) or file path")
 	c.Flags().StringSliceVarP(&props, "properties", "p", []string{}, "Add properties, will override properties in config file, --properties=\"k1=v1\" --properties=\"k2=v2,k3=v3\"")
 	c.Flags().StringVarP(&opt.Templates, "templates", "t", "", "Override templates directory, can be path or URL, e.g. https://github.com/DanielLiu1123/gencoder/tree/main/templates")
 	c.Flags().BoolVarP(&opt.includeNonTpl, "include-non-tpl", "a", false, "Include non-template files in the 'templates' option")
@@ -126,7 +123,11 @@ func run(_ *cobra.Command, _ []string, opt *generateOptions, _ *model.GlobalOpti
 
 	mergeCmdOptionsToConfig(cfg, opt)
 
-	for _, helper := range cfg.ImportHelper {
+	// Register custom helpers
+	for _, helper := range opt.importHelpers {
+		registerCustomHelpers(helper)
+	}
+	for _, helper := range cfg.ImportHelpers {
 		registerCustomHelpers(helper)
 	}
 
