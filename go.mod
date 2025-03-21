@@ -4,7 +4,7 @@ go 1.24.1
 
 require (
 	github.com/dop251/goja v0.0.0-20250309171923-bcd7cc6bf64c
-	github.com/go-sql-driver/mysql v1.9.0
+	github.com/go-sql-driver/mysql v1.9.1
 	github.com/invopop/jsonschema v0.13.0
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-sqlite3 v1.14.24
