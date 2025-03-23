@@ -263,7 +263,7 @@ Handlebars.registerHelper('_toUpperCase', function (target) {
 `))
 
 	cmd := NewCmdGenerate(&model.GlobalOptions{})
-	cmd.SetArgs([]string{"--config", "gencoder.yaml", "--properties", "name=World", "--import-helper", "helpers.js"})
+	cmd.SetArgs([]string{"--config", "gencoder.yaml", "--properties", "name=World", "--import-helpers", "helpers.js"})
 
 	err = cmd.Execute()
 	require.NoError(t, err)
