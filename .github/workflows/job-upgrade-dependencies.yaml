@@ -26,17 +26,17 @@ jobs:
           go get -u -v ./...
           go mod tidy
 
-          git --no-pager diff go.mod go.sum
-          diff_count=$(git diff go.mod go.sum | wc -l | tr -d ' ')
+          git diff --exit-code go.mod go.sum
+          has_diff=$?
           
-          echo "diff_count=$diff_count" >> $GITHUB_ENV
+          echo "has_diff=$has_diff" >> $GITHUB_ENV
           
-          if [[ diff_count -eq 0 ]]; then
+          if [[ has_diff -eq 0 ]]; then
             echo "No dependencies need to be upgraded"
           fi
 
       - name: Create Pull Request
-        if: env.diff_count != 0
+        if: env.has_diff == 1
         uses: peter-evans/create-pull-request@v7
         with:
           commit-message: "Upgrade dependencies"
