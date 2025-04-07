@@ -26,13 +26,16 @@ jobs:
           go get -u -v ./...
           go mod tidy
 
-          git diff --exit-code go.mod go.sum
-          has_diff=$?
-          
+          # Prevent to fail the CI if there has changes
+          git diff --exit-code go.mod || true
+          has_diff=$(git diff --exit-code go.mod)
+
           echo "has_diff=$has_diff" >> $GITHUB_ENV
-          
-          if [[ has_diff -eq 0 ]]; then
+
+          if [[ $has_diff -eq 0 ]]; then
             echo "No dependencies need to be upgraded"
+          else
+            echo "Dependencies changes detected, will create PR"
           fi
 
       - name: Create Pull Request
