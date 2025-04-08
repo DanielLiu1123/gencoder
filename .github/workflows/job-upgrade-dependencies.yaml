@@ -11,7 +11,6 @@ permissions:
 jobs:
   upgrade-dependencies:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -22,13 +21,14 @@ jobs:
           go-version: stable
 
       - name: Upgrade Dependencies
+        continue-on-error: true
         run: |
           go get -u -v ./...
           go mod tidy
 
-          # Prevent to fail the CI if there has changes
-          git diff --exit-code go.mod || true
-          has_diff=$(git diff --exit-code go.mod)
+          # 0: no changes, 1: has changes
+          git diff --exit-code go.mod
+          has_diff=$?
 
           echo "has_diff=$has_diff" >> $GITHUB_ENV
 
