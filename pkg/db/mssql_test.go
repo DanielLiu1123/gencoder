@@ -90,7 +90,7 @@ func TestGenMssqlTable(t *testing.T) {
 	assert.NotNil(t, tb)
 	assert.Equal(t, "dbo", tb.Schema)
 	assert.Equal(t, "user", tb.Name)
-	assert.Equal(t, "User account information", tb.Comment)
+	assert.Equal(t, "User account information", *tb.Comment)
 
 	// Assertions on the columns
 	assert.Equal(t, 9, len(tb.Columns)) // Columns without deleted_at

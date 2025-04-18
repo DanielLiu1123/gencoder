@@ -79,7 +79,7 @@ func TestGenPostgresTable(t *testing.T) {
 	assert.NotNil(t, tb)
 	assert.Equal(t, "public", tb.Schema)
 	assert.Equal(t, "user", tb.Name)
-	assert.Equal(t, "User account information", tb.Comment)
+	assert.Equal(t, "User account information", *tb.Comment)
 
 	assert.Equal(t, 9, len(tb.Columns))
 	assert.Equal(t, true, tb.Columns[0].IsPrimaryKey)
