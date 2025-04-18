@@ -63,6 +63,13 @@
           "examples": [
             "./output"
           ]
+        },
+        "importHelpers": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "The list of helper JavaScript files"
         }
       },
       "additionalProperties": false,

@@ -3,7 +3,7 @@ package model
 type Table struct {
 	Name    string    `json:"name" yaml:"name"`
 	Schema  string    `json:"schema" yaml:"schema"`
-	Comment string    `json:"comment" yaml:"comment"`
+	Comment *string   `json:"comment" yaml:"comment"`
 	Columns []*Column `json:"columns" yaml:"columns"`
 	Indexes []*Index  `json:"indexes" yaml:"indexes"`
 }
