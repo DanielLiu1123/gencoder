@@ -7,7 +7,7 @@ require (
 	github.com/go-sql-driver/mysql v1.9.2
 	github.com/invopop/jsonschema v0.13.0
 	github.com/lib/pq v1.10.9
-	github.com/microsoft/go-mssqldb v1.8.0
+	github.com/microsoft/go-mssqldb v1.8.1
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.10.0
 	github.com/testcontainers/testcontainers-go/modules/mssql v0.35.0
