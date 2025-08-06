@@ -19,7 +19,7 @@ import (
 
 type generateOptions struct {
 	config        string
-	importHelpers []string
+	helpers       []string
 	includeNonTpl bool
 
 	// Override config file gencoder.yaml
@@ -60,8 +60,8 @@ func NewCmdGenerate(globalOptions *model.GlobalOptions) *cobra.Command {
 	}
 
 	c.Flags().StringVarP(&opt.config, "config", "f", globalOptions.Config, "Config file to use")
-	c.Flags().StringSliceVar(&opt.importHelpers, "helpers", []string{}, "Import helper JavaScript file, can be URL ([http|https]://...) or file path")
-	c.Flags().StringSliceVarP(&opt.importHelpers, "import-helpers", "i", []string{}, "Import helper JavaScript file, can be URL ([http|https]://...) or file path (deprecated, use --helpers instead)")
+	c.Flags().StringSliceVar(&opt.helpers, "helpers", []string{}, "Import helper JavaScript file, can be URL ([http|https]://...) or file path")
+	c.Flags().StringSliceVarP(&opt.helpers, "import-helpers", "i", []string{}, "Import helper JavaScript file, can be URL ([http|https]://...) or file path (deprecated, use --helpers instead)")
 	c.Flags().StringSliceVarP(&props, "properties", "p", []string{}, "Add properties, will override properties in config file, --properties=\"k1=v1\" --properties=\"k2=v2,k3=v3\"")
 	c.Flags().StringVarP(&opt.Templates, "templates", "t", "", "Override templates directory, can be path or URL, e.g. https://github.com/DanielLiu1123/gencoder/tree/main/templates")
 	c.Flags().BoolVarP(&opt.includeNonTpl, "include-non-tpl", "a", false, "Include non-template files in the 'templates' option")
@@ -135,11 +135,16 @@ func run(_ *cobra.Command, _ []string, opt *generateOptions, _ *model.GlobalOpti
 
 	mergeCmdOptionsToConfig(cfg, opt)
 
+	// Show deprecation warning if old config field is used
+	if len(cfg.ImportHelpers) > 0 && len(cfg.Helpers) == 0 {
+		fmt.Fprintf(os.Stderr, "Warning: 'importHelpers' field in config file is deprecated, please use 'helpers' instead\n")
+	}
+
 	// Register custom helpers
-	for _, helper := range opt.importHelpers {
+	for _, helper := range opt.helpers {
 		registerCustomHelpers(helper)
 	}
-	for _, helper := range cfg.ImportHelpers {
+	for _, helper := range cfg.GetHelpers() {
 		registerCustomHelpers(helper)
 	}
 
