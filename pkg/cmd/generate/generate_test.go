@@ -1,8 +1,11 @@
 package generate
 
 import (
+	"bytes"
+	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -452,4 +455,82 @@ Hello, {{properties.name}}!`))
 	assert.NoError(t, err)
 	assert.Equal(t, `@gencoder.generated: test1.txt
 Hello, World!`, string(content))
+}
+
+func TestNewCmdGenerate_whenHelpersIsSet_thenShouldRegisterCustomHelpers(t *testing.T) {
+	workDir, err := os.MkdirTemp("", "test")
+	require.NoError(t, err)
+	defer func(path string) {
+		err := os.RemoveAll(path)
+		if err != nil {
+			t.Fatalf("failed to remove temp dir: %s", err)
+		}
+	}(workDir)
+
+	_ = os.Chdir(workDir)
+
+	createNewFile(filepath.Join(workDir, "gencoder.yaml"), []byte(`
+templates: templates
+`))
+	createNewFile(filepath.Join(workDir, "templates/test1.text.hbs"), []byte(`@gencoder.generated: test1.txt
+Hello, {{_toUpperCase properties.name}}!`))
+	createNewFile(filepath.Join(workDir, "helpers.js"), []byte(`
+Handlebars.registerHelper('_toUpperCase', function (target) {
+	return target.toUpperCase();
+});
+`))
+
+	cmd := NewCmdGenerate(&model.GlobalOptions{})
+	cmd.SetArgs([]string{"--config", "gencoder.yaml", "--properties", "name=World", "--helpers", "helpers.js"})
+
+	err = cmd.Execute()
+	require.NoError(t, err)
+
+	content, err := os.ReadFile(filepath.Join(workDir, "test1.txt"))
+	assert.NoError(t, err)
+	assert.Equal(t, `@gencoder.generated: test1.txt
+Hello, WORLD!`, string(content))
+}
+
+func TestNewCmdGenerate_whenImportHelpersIsUsed_thenShouldShowDeprecationWarning(t *testing.T) {
+	workDir, err := os.MkdirTemp("", "test")
+	require.NoError(t, err)
+	defer func(path string) {
+		err := os.RemoveAll(path)
+		if err != nil {
+			t.Fatalf("failed to remove temp dir: %s", err)
+		}
+	}(workDir)
+
+	_ = os.Chdir(workDir)
+
+	createNewFile(filepath.Join(workDir, "gencoder.yaml"), []byte(`
+templates: templates
+`))
+	createNewFile(filepath.Join(workDir, "templates/test1.text.hbs"), []byte(`@gencoder.generated: test1.txt
+Hello, {{properties.name}}!`))
+	createNewFile(filepath.Join(workDir, "helpers.js"), []byte(`
+// Empty helper file for testing
+`))
+
+	// Capture stderr to check for deprecation warning
+	oldStderr := os.Stderr
+	r, w, _ := os.Pipe()
+	os.Stderr = w
+
+	cmd := NewCmdGenerate(&model.GlobalOptions{})
+	cmd.SetArgs([]string{"--config", "gencoder.yaml", "--properties", "name=World", "--import-helpers", "helpers.js"})
+
+	err = cmd.Execute()
+	require.NoError(t, err)
+
+	// Restore stderr and read captured output
+	_ = w.Close()
+	os.Stderr = oldStderr
+	var buf bytes.Buffer
+	_, _ = io.Copy(&buf, r)
+	stderrOutput := buf.String()
+
+	// Check that deprecation warning was shown
+	assert.True(t, strings.Contains(stderrOutput, "Warning: --import-helpers flag is deprecated, please use --helpers instead"))
 }
