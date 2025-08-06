@@ -12,7 +12,7 @@ import (
 	_ "github.com/microsoft/go-mssqldb"
 )
 
-var version = "0.1.0"
+var version = "0.1.1"
 
 func main() {
 
