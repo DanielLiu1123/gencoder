@@ -1,10 +1,11 @@
 package main
 
 import (
+	"log"
+
 	"github.com/DanielLiu1123/gencoder/pkg/model"
 	"github.com/DanielLiu1123/gencoder/pkg/util"
 	"github.com/invopop/jsonschema"
-	"log"
 )
 
 const jsonschemaFile = "schema.json"

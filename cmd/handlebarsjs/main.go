@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/DanielLiu1123/gencoder/pkg/util"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/DanielLiu1123/gencoder/pkg/util"
 )
 
 const (
@@ -48,7 +49,12 @@ func genHandlebarJS() {
 	if err != nil {
 		log.Fatal("Error fetching HandlebarsJS:", err)
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			log.Fatal("Error closing response body:", err)
+		}
+	}(resp.Body)
 
 	jsCode, err := io.ReadAll(resp.Body)
 	if err != nil {

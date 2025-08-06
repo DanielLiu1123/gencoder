@@ -46,7 +46,12 @@ func LoadFiles(cfg *model.Config) ([]*model.File, error) {
 		if err != nil {
 			return nil, err
 		}
-		defer os.RemoveAll(templatePath)
+		defer func(path string) {
+			err := os.RemoveAll(path)
+			if err != nil {
+				log.Printf("failed to remove temp dir: %s", err)
+			}
+		}(templatePath)
 	}
 
 	return loadFilesFromPath(templatePath, cfg)
@@ -173,7 +178,12 @@ func collectRenderContextsForDBConfig(cfg *model.Config, dbCfg *model.DatabaseCo
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer conn.Close()
+	defer func(conn *sql.DB) {
+		err := conn.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(conn)
 
 	var mu sync.Mutex
 	var contexts []*model.RenderContext

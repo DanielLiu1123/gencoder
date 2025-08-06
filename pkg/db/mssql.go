@@ -4,9 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"github.com/DanielLiu1123/gencoder/pkg/model"
 	"slices"
 	"sort"
+
+	"github.com/DanielLiu1123/gencoder/pkg/model"
 )
 
 // GenMssqlTable generates an MSSQL table and fills the Table structure.
@@ -88,7 +89,12 @@ func getMssqlColumnsInfo(ctx context.Context, db *sql.DB, schema, name string, i
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(rows)
 
 	var columns []*model.Column
 	for rows.Next() {
@@ -123,7 +129,12 @@ func getMssqlIndexesInfo(ctx context.Context, db *sql.DB, schema, name string) (
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(rows)
 
 	indexMap := make(map[string]*model.Index)
 	for rows.Next() {

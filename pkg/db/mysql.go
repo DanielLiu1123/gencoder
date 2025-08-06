@@ -66,7 +66,12 @@ func getMySQLColumnsInfo(ctx context.Context, db *sql.DB, schema, table string, 
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(rows)
 
 	var columns []*model.Column
 	for rows.Next() {
@@ -94,7 +99,12 @@ func getMySQLIndexesInfo(ctx context.Context, db *sql.DB, schema, table string) 
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(rows)
 
 	indexMap := make(map[string]*model.Index)
 	for rows.Next() {

@@ -1,10 +1,11 @@
 package generate
 
 import (
-	"github.com/stretchr/testify/require"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 
 	"github.com/DanielLiu1123/gencoder/pkg/model"
 	"github.com/stretchr/testify/assert"
@@ -224,7 +225,12 @@ new content 2
 func TestNewCmdGenerate_whenConfigIsSet_thenShouldUsingSpecificConfigFile(t *testing.T) {
 	workDir, err := os.MkdirTemp("", "test")
 	require.NoError(t, err)
-	defer os.RemoveAll(workDir)
+	defer func(path string) {
+		err := os.RemoveAll(path)
+		if err != nil {
+			t.Fatalf("failed to remove temp dir: %s", err)
+		}
+	}(workDir)
 
 	_ = os.Chdir(workDir)
 
@@ -247,7 +253,12 @@ Hello, World!`, string(content))
 func TestNewCmdGenerate_whenImportHelperIsSet_thenShouldRegisterCustomHelpers(t *testing.T) {
 	workDir, err := os.MkdirTemp("", "test")
 	require.NoError(t, err)
-	defer os.RemoveAll(workDir)
+	defer func(path string) {
+		err := os.RemoveAll(path)
+		if err != nil {
+			t.Fatalf("failed to remove temp dir: %s", err)
+		}
+	}(workDir)
 
 	_ = os.Chdir(workDir)
 
@@ -279,7 +290,12 @@ func TestNewCmdGenerate_whenUsingIncludeNonTpl_thenShouldGenerateNonTemplateFile
 	// Create template directory
 	tplDir, err := os.MkdirTemp("", "tpl")
 	require.NoError(t, err)
-	defer os.RemoveAll(tplDir)
+	defer func(path string) {
+		err := os.RemoveAll(path)
+		if err != nil {
+			t.Fatalf("failed to remove temp dir: %s", err)
+		}
+	}(tplDir)
 
 	_ = os.Chdir(tplDir)
 
@@ -301,7 +317,12 @@ Hello, {{properties.name}}!`))
 	// Create generated directory
 	generatedDir, err := os.MkdirTemp("", "generated")
 	require.NoError(t, err)
-	defer os.RemoveAll(generatedDir)
+	defer func(path string) {
+		err := os.RemoveAll(path)
+		if err != nil {
+			t.Fatalf("failed to remove temp dir: %s", err)
+		}
+	}(generatedDir)
 
 	_ = os.Chdir(generatedDir)
 
@@ -339,7 +360,12 @@ Hello, World!`, string(content))
 func TestNewCmdGenerate_whenTemplatesIsSet_thenShouldOverrideTemplatesInConfigFile(t *testing.T) {
 	workDir, err := os.MkdirTemp("", "test")
 	require.NoError(t, err)
-	defer os.RemoveAll(workDir)
+	defer func(path string) {
+		err := os.RemoveAll(path)
+		if err != nil {
+			t.Fatalf("failed to remove temp dir: %s", err)
+		}
+	}(workDir)
 
 	_ = os.Chdir(workDir)
 
@@ -366,7 +392,12 @@ Hello, World! -- from templates`, string(content))
 func TestNewCmdGenerate_whenPropertiesIsSet_thenShouldOverridePropertiesInConfigFile(t *testing.T) {
 	workDir, err := os.MkdirTemp("", "test")
 	require.NoError(t, err)
-	defer os.RemoveAll(workDir)
+	defer func(path string) {
+		err := os.RemoveAll(path)
+		if err != nil {
+			t.Fatalf("failed to remove temp dir: %s", err)
+		}
+	}(workDir)
 
 	_ = os.Chdir(workDir)
 
@@ -395,7 +426,12 @@ Hello, I'm Daniel, 20 years old, and 170cm tall!`, string(content))
 func TestNewCmdGenerate_whenOutputIsSet_thenShouldOverrideOutputInConfigFile(t *testing.T) {
 	workDir, err := os.MkdirTemp("", "test")
 	require.NoError(t, err)
-	defer os.RemoveAll(workDir)
+	defer func(path string) {
+		err := os.RemoveAll(path)
+		if err != nil {
+			t.Fatalf("failed to remove temp dir: %s", err)
+		}
+	}(workDir)
 
 	_ = os.Chdir(workDir)
 

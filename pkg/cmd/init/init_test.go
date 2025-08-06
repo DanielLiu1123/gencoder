@@ -1,18 +1,24 @@
 package init
 
 import (
-	"github.com/DanielLiu1123/gencoder/pkg/model"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/DanielLiu1123/gencoder/pkg/model"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewCmdInit(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "test")
 	require.NoError(t, err)
-	defer os.RemoveAll(tempDir)
+	defer func(path string) {
+		err := os.RemoveAll(path)
+		if err != nil {
+			t.Fatalf("failed to remove temp dir: %s", err)
+		}
+	}(tempDir)
 
 	err = os.Chdir(tempDir)
 	require.NoError(t, err)
@@ -42,7 +48,12 @@ func TestNewCmdInit(t *testing.T) {
 func TestNewCmdInit_whenOutputFlagIsSet_thenShouldCreateConfigAndTemplatesInSpecifiedDirectory(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "test")
 	require.NoError(t, err)
-	defer os.RemoveAll(tempDir)
+	defer func(path string) {
+		err := os.RemoveAll(path)
+		if err != nil {
+			t.Fatalf("failed to remove temp dir: %s", err)
+		}
+	}(tempDir)
 
 	cmd := NewCmdInit(&model.GlobalOptions{})
 

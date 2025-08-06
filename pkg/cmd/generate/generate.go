@@ -98,7 +98,12 @@ func fetchFromURL(url string) string {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(resp.Body)
 
 	bytes, err := io.ReadAll(resp.Body)
 	if err != nil {

@@ -81,7 +81,12 @@ func getPostgresColumnsInfo(ctx context.Context, db *sql.DB, schema, name string
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(rows)
 
 	var columns []*model.Column
 	for rows.Next() {
@@ -119,7 +124,12 @@ func getPostgresIndexesInfo(ctx context.Context, db *sql.DB, schema, name string
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(rows)
 
 	indexMap := make(map[string]*model.Index)
 	for rows.Next() {

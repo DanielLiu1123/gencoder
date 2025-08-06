@@ -1,9 +1,10 @@
 package main
 
 import (
+	"log"
+
 	"github.com/DanielLiu1123/gencoder/pkg/cmd"
 	"github.com/DanielLiu1123/gencoder/pkg/model"
-	"log"
 
 	// drivers
 	_ "github.com/go-sql-driver/mysql"

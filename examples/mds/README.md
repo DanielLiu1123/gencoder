@@ -6,11 +6,11 @@ mds means MyBatis Dynamic SQL.
 start databases:
 
 ```shell
-cd e2e/mds
+cd examples/mds
 bash db.sh
 ```
 
 ```shell
-cd e2e/mds
+cd examples/mds
 go run ../../cmd/gencoder/main.go generate
 ```

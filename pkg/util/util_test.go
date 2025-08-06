@@ -2,23 +2,30 @@ package util
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"testing"
+
 	"github.com/DanielLiu1123/gencoder/pkg/model"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go/modules/mysql"
 	"github.com/xo/dburl"
-	"os"
-	"os/exec"
-	"path/filepath"
-	"testing"
 )
 
 func TestReadConfig(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "test")
 	require.NoError(t, err)
-	defer os.RemoveAll(tempDir)
+	defer func(path string) {
+		err := os.RemoveAll(path)
+		if err != nil {
+			t.Fatalf("failed to remove temp dir: %s", err)
+		}
+	}(tempDir)
 
 	configPath := filepath.Join(tempDir, "config.yaml")
 	configContent := `
@@ -42,7 +49,12 @@ databases:
 func TestLoadTemplates(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "test")
 	require.NoError(t, err)
-	defer os.RemoveAll(tempDir)
+	defer func(path string) {
+		err := os.RemoveAll(path)
+		if err != nil {
+			t.Fatalf("failed to remove temp dir: %s", err)
+		}
+	}(tempDir)
 
 	templateContent := `
 // @gencoder.generated:{{table.name}}.go
@@ -100,7 +112,12 @@ func TestCollectRenderContexts(t *testing.T) {
 	// Create test table
 	db, err := dburl.Open(dsn)
 	require.NoError(t, err)
-	defer db.Close()
+	defer func(db *sql.DB) {
+		err := db.Close()
+		if err != nil {
+			t.Fatalf("failed to close database: %s", err)
+		}
+	}(db)
 
 	_, err = db.Exec(`
 	CREATE TABLE testdb.user ( 
