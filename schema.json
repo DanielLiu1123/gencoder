@@ -64,12 +64,19 @@
             "./output"
           ]
         },
-        "importHelpers": {
+        "helpers": {
           "items": {
             "type": "string"
           },
           "type": "array",
           "description": "The list of helper JavaScript files"
+        },
+        "importHelpers": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "The list of helper JavaScript files (deprecated"
         }
       },
       "additionalProperties": false,

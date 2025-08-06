@@ -135,11 +135,16 @@ func run(_ *cobra.Command, _ []string, opt *generateOptions, _ *model.GlobalOpti
 
 	mergeCmdOptionsToConfig(cfg, opt)
 
+	// Show deprecation warning if old config field is used
+	if len(cfg.ImportHelpers) > 0 && len(cfg.Helpers) == 0 {
+		fmt.Fprintf(os.Stderr, "Warning: 'importHelpers' field in config file is deprecated, please use 'helpers' instead\n")
+	}
+
 	// Register custom helpers
 	for _, helper := range opt.importHelpers {
 		registerCustomHelpers(helper)
 	}
-	for _, helper := range cfg.ImportHelpers {
+	for _, helper := range cfg.GetHelpers() {
 		registerCustomHelpers(helper)
 	}
 

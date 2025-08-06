@@ -7,7 +7,8 @@ type Config struct {
 	Databases     []*DatabaseConfig `json:"databases,omitempty" yaml:"databases,omitempty" jsonschema:"description=The list of databases"`
 	Properties    map[string]string `json:"properties,omitempty" yaml:"properties,omitempty" jsonschema:"description=The global properties,will be overridden by properties in databases and tables"`
 	Output        string            `json:"output,omitempty" yaml:"output,omitempty" jsonschema:"description=The output directory for generated files,example=./output"`
-	ImportHelpers []string          `json:"importHelpers,omitempty" yaml:"importHelpers,omitempty" jsonschema:"description=The list of helper JavaScript files"`
+	Helpers       []string          `json:"helpers,omitempty" yaml:"helpers,omitempty" jsonschema:"description=The list of helper JavaScript files"`
+	ImportHelpers []string          `json:"importHelpers,omitempty" yaml:"importHelpers,omitempty" jsonschema:"description=The list of helper JavaScript files (deprecated, use helpers instead)"`
 }
 
 type DatabaseConfig struct {
@@ -56,4 +57,14 @@ func (e BlockMarker) GetEnd() string {
 		return "@gencoder.block.end:"
 	}
 	return e.End
+}
+
+// GetHelpers returns the merged list of helpers, prioritizing the new Helpers field
+func (c Config) GetHelpers() []string {
+	// If new Helpers field is set, use it
+	if len(c.Helpers) > 0 {
+		return c.Helpers
+	}
+	// Fall back to ImportHelpers for backward compatibility
+	return c.ImportHelpers
 }
