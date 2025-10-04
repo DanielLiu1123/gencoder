@@ -1,6 +1,4 @@
-
 init :
 	git config core.hooksPath .githooks
-	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.3.1
-
-.PHONY : init
+	# https://golangci-lint.run/docs/welcome/install/#binaries
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b $$(go env GOPATH)/bin v2.5.0
