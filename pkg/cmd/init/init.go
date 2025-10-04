@@ -1,10 +1,11 @@
 package init
 
 import (
-	"github.com/DanielLiu1123/gencoder/pkg/util"
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/DanielLiu1123/gencoder/pkg/util"
 
 	"github.com/DanielLiu1123/gencoder/pkg/model"
 	"github.com/spf13/cobra"
@@ -100,10 +101,9 @@ public record {{_pascalCase table.name}} (
 {{~else if (_match 'bit|bool|boolean' columnType)}}Boolean
 {{~else if (_match 'decimal' columnType)}}java.math.BigDecimal
 {{~else if (_match 'float' columnType)}}Double
-{{~else if (_match 'datetime' columnType)}}java.time.LocalDateTime
+{{~else if (_match 'datetime|timestamp' columnType)}}java.time.LocalDateTime
 {{~else if (_match 'date' columnType)}}java.time.LocalDate
 {{~else if (_match 'time' columnType)}}java.time.LocalTime
-{{~else if (_match 'timestamp' columnType)}}java.time.LocalDateTime
 {{~else if (_match 'varbinary' columnType)}}byte[]
 {{~else if (_match 'enum.*' columnType)}}String
 {{~else}}Object

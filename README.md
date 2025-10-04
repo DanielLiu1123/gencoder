@@ -50,7 +50,7 @@ docker rm -f test_mysql && docker run --name test_mysql -e MYSQL_ROOT_PASSWORD=r
 Init basic configuration:
 
 ```bash
-gencoder init
+gencoder init -o gencoder-test && cd gencoder-test
 ```
 
 First time generate:
