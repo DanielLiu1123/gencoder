@@ -3,7 +3,7 @@ module github.com/DanielLiu1123/gencoder
 go 1.25
 
 require (
-	github.com/dop251/goja v0.0.0-20251008123653-cf18d89f3cf6
+	github.com/dop251/goja v0.0.0-20251103141225-af2ceb9156d7
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/invopop/jsonschema v0.13.0
 	github.com/lib/pq v1.10.9
@@ -36,7 +36,7 @@ require (
 	github.com/docker/docker v28.5.1+incompatible // indirect
 	github.com/docker/go-connections v0.6.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
-	github.com/ebitengine/purego v0.9.0 // indirect
+	github.com/ebitengine/purego v0.9.1 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
