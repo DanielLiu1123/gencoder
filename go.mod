@@ -3,7 +3,7 @@ module github.com/DanielLiu1123/gencoder
 go 1.25
 
 require (
-	github.com/dop251/goja v0.0.0-20251201205617-2bb4c724c0f9
+	github.com/dop251/goja v0.0.0-20260106131823-651366fbe6e3
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/invopop/jsonschema v0.13.0
 	github.com/lib/pq v1.10.9
@@ -81,7 +81,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.39.0 // indirect
 	go.opentelemetry.io/otel/trace v1.39.0 // indirect
 	golang.org/x/crypto v0.46.0 // indirect
-	golang.org/x/sys v0.39.0 // indirect
-	golang.org/x/text v0.32.0 // indirect
+	golang.org/x/sys v0.40.0 // indirect
+	golang.org/x/text v0.33.0 // indirect
 	google.golang.org/protobuf v1.35.2 // indirect
 )
