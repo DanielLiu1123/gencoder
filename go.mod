@@ -6,7 +6,7 @@ require (
 	github.com/dop251/goja v0.0.0-20260106131823-651366fbe6e3
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/invopop/jsonschema v0.13.0
-	github.com/lib/pq v1.11.1
+	github.com/lib/pq v1.11.2
 	github.com/microsoft/go-mssqldb v1.9.6
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
