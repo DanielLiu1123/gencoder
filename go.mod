@@ -3,7 +3,7 @@ module github.com/DanielLiu1123/gencoder
 go 1.25.7
 
 require (
-	github.com/dop251/goja v0.0.0-20260603143327-1f200ca63355
+	github.com/dop251/goja v0.0.0-20260607120635-348e6bea910d
 	github.com/go-sql-driver/mysql v1.10.0
 	github.com/invopop/jsonschema v0.14.0
 	github.com/lib/pq v1.12.3
@@ -33,11 +33,11 @@ require (
 	github.com/cpuguy83/dockercfg v0.3.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
-	github.com/dlclark/regexp2/v2 v2.1.2 // indirect
+	github.com/dlclark/regexp2/v2 v2.2.1 // indirect
 	github.com/docker/go-connections v0.7.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/ebitengine/purego v0.10.1 // indirect
-	github.com/felixge/httpsnoop v1.0.4 // indirect
+	github.com/felixge/httpsnoop v1.1.0 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
@@ -77,8 +77,8 @@ require (
 	go.opentelemetry.io/otel v1.44.0 // indirect
 	go.opentelemetry.io/otel/metric v1.44.0 // indirect
 	go.opentelemetry.io/otel/trace v1.44.0 // indirect
-	go.yaml.in/yaml/v4 v4.0.0-rc.4 // indirect
-	golang.org/x/crypto v0.52.0 // indirect
-	golang.org/x/sys v0.45.0 // indirect
-	golang.org/x/text v0.37.0 // indirect
+	go.yaml.in/yaml/v4 v4.0.0-rc.5 // indirect
+	golang.org/x/crypto v0.53.0 // indirect
+	golang.org/x/sys v0.46.0 // indirect
+	golang.org/x/text v0.38.0 // indirect
 )
