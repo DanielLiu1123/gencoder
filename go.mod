@@ -3,7 +3,7 @@ module github.com/DanielLiu1123/gencoder
 go 1.26.0
 
 require (
-	github.com/dop251/goja v0.0.0-20261018113103-d42f16bb6161
+	github.com/dop251/goja v0.0.0-20261023133238-1622cea953df
 	github.com/go-sql-driver/mysql v1.10.1
 	github.com/invopop/jsonschema v0.14.0
 	github.com/lib/pq v1.12.3
@@ -65,7 +65,7 @@ require (
 	github.com/pb33f/ordered-map/v2 v2.3.2 // indirect
 	github.com/power-devops/perfstat v0.0.0-20260916203055-22a1a467d9f0 // indirect
 	github.com/shirou/gopsutil/v4 v4.26.9 // indirect
-	github.com/shopspring/decimal v1.5.0 // indirect
+	github.com/shopspring/decimal v1.6.0 // indirect
 	github.com/sirupsen/logrus v1.10.2 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/testcontainers/testcontainers-go v0.44.0 // indirect
