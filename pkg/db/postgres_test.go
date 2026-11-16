@@ -16,7 +16,7 @@ import (
 func TestGenPostgresTable(t *testing.T) {
 	err := exec.Command("docker", "info").Run()
 	if err != nil {
-		t.Skip("Docker not available, skipping MySQL tests")
+		t.Skip("Docker not available, skipping PostgreSQL tests")
 	}
 
 	ctx := context.Background()
@@ -40,8 +40,12 @@ func TestGenPostgresTable(t *testing.T) {
 	require.NoError(t, err)
 
 	dsn := fmt.Sprintf("postgres://root:root@%s:%s/testdb?sslmode=disable", host, port.Port())
-	db, err := dburl.Open(dsn)
+	u, err := dburl.Parse(dsn)
 	require.NoError(t, err)
+	db, err := OpenConnection(u)
+	require.NoError(t, err)
+
+	t.Cleanup(func() { _ = db.Close() })
 
 	_, err = db.Exec(`CREATE TABLE testdb.public."user" (
 		id SERIAL PRIMARY KEY,

@@ -174,7 +174,7 @@ func collectRenderContextsForDBConfig(cfg *model.Config, dbCfg *model.DatabaseCo
 		log.Fatal(err)
 	}
 
-	conn, err := sql.Open(u.Driver, u.DSN)
+	conn, err := db.OpenConnection(u)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -195,7 +195,7 @@ func collectRenderContextsForDBConfig(cfg *model.Config, dbCfg *model.DatabaseCo
 			defer wg.Done()
 
 			schema := getSchema(tbCfg, dbCfg, u)
-			table, err := generateTable(conn, u.Driver, schema, tbCfg)
+			table, err := generateTable(conn, u.Dialect, schema, tbCfg)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -225,23 +225,23 @@ func getSchema(tbCfg *model.TableConfig, dbCfg *model.DatabaseConfig, u *dburl.U
 	if dbCfg.Schema != "" {
 		return dbCfg.Schema
 	}
-	if u.Driver == "mysql" {
+	if u.Dialect == "mysql" {
 		arr := strings.Split(u.Path, "/")
 		if len(arr) > 1 {
 			return arr[1] // database name as schema in MySQL
 		}
 	}
-	if u.Driver == "postgres" {
+	if u.Dialect == "postgres" {
 		return "public" // default schema in PostgreSQL
 	}
-	if u.Driver == "sqlserver" {
+	if u.Dialect == "sqlserver" {
 		return "dbo" // default schema in SQL Server
 	}
 	return ""
 }
 
-func generateTable(conn *sql.DB, driver, schema string, tbCfg *model.TableConfig) (*model.Table, error) {
-	switch driver {
+func generateTable(conn *sql.DB, dialect, schema string, tbCfg *model.TableConfig) (*model.Table, error) {
+	switch dialect {
 	case "mysql":
 		return db.GenMySQLTable(context.Background(), conn, schema, tbCfg.Name, tbCfg.IgnoreColumns)
 	case "postgres":
@@ -249,7 +249,7 @@ func generateTable(conn *sql.DB, driver, schema string, tbCfg *model.TableConfig
 	case "sqlserver":
 		return db.GenMssqlTable(context.Background(), conn, schema, tbCfg.Name, tbCfg.IgnoreColumns)
 	default:
-		return nil, fmt.Errorf("unsupported driver: %s", driver)
+		return nil, fmt.Errorf("unsupported dialect: %s", dialect)
 	}
 }
 

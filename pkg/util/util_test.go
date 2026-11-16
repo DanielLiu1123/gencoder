@@ -242,3 +242,19 @@ func Test_getSchema_whenDBUsingMSSQL(t *testing.T) {
 	schema = getSchema(d.Tables[1], d, u)
 	assert.Equal(t, "schema1", schema)
 }
+
+func TestPostgresSchemaUsesDialect(t *testing.T) {
+	for _, scheme := range []string{"postgres", "postgresql", "pg", "pgsql", "pgx", "pq"} {
+		t.Run(scheme, func(t *testing.T) {
+			u, err := dburl.Parse(scheme + "://user:password@localhost/dbname")
+			require.NoError(t, err)
+			d := &model.DatabaseConfig{}
+			table := &model.TableConfig{Name: "example"}
+			require.Equal(t, "public", getSchema(table, d, u))
+			d.Schema = "database_schema"
+			require.Equal(t, "database_schema", getSchema(table, d, u))
+			table.Schema = "table_schema"
+			require.Equal(t, "table_schema", getSchema(table, d, u))
+		})
+	}
+}
